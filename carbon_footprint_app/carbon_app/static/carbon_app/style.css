@@ -1,0 +1,58 @@
+body {
+    font-family: 'Times New Roman', Times, serif;
+    max-width: 600px;
+    margin: 40x auto;
+    padding: 20px;
+    background: #f7f7f7;
+}
+
+h1 {
+    text-align: center;
+    color: #2c3e50;
+}
+
+form {
+    background: pink;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+button {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #27ae60;
+}
+
+h2 {
+    margin-top: 30px;
+    text-align: center;
+    color: #34495e;
+}
+
+.result-card {
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.result-card h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.result-card p {
+    font-size: 1.4em;
+    color: #27ae60;
+    margin: 0;
+}

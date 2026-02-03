@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carbon Footprint App</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'carbon_app/style.css' %}">
+         
+</head>
+<body>
+    <h1>Carbon Footprint App</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p}}
+        <button type="submit">Calculate</button>
+    </form>
+    {% if result %}
+    <div class="result-card"> 
+        <h2>Your weekly CO2 emissions</h2>
+        <p><strong></strong>{{ result }} kg</p>strong></p>
+    </div>   
+    {% endif %}
+    
+    {% if distance %}
+        <p>Distance calculated: {{ distance }} km</p>
+    {% endif %}
+
+</body>
+</html>
