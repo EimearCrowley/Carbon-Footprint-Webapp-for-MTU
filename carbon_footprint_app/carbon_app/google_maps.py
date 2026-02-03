@@ -1,12 +1,12 @@
 import requests
 from django.conf import settings
 
-def get_distance_km(origin, destinaiton):
+def get_distance_km(origin, destination):
     api_key = settings.GOOGLE_MAPS_API_KEY
-    url = "https://maps.googleapis.com/maps/api/directions/json"
+    url = "https://maps.googleapis.com/maps/api/distancematrix/json"
     params = {
-        "origin": origin,
-        "destination": destinaiton,
+        "origins": origin,
+        "destinations": destination,
         "mode": "driving",
         "units": "metric",
         "key": api_key,
