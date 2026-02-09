@@ -20,7 +20,12 @@ from django.urls import path, include
 # if user goes here, run this function in views
 # user visits site homepage, calls index function in views
 
+from django.contrib import admin
+from django.urls import path, include
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('carbon_app.urls')),  # show index view when on homepage, calls index from views, gives URL a name that can be referenced in templates
 ]
+
+

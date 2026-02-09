@@ -55,7 +55,7 @@ ROOT_URLCONF = 'carbon_footprint_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'carbon_app' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
