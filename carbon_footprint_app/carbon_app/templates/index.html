@@ -1,3 +1,8 @@
+<!-- template for homepage
+{{% %}} are logic for templates (if, for)
+{{ }} are template variable outputs (passed from views)
+--> 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,14 +18,14 @@
         {{ form.as_p}}
         <button type="submit">Calculate</button>
     </form>
-    {% if result %}
+    {% if result is not None%}
     <div class="result-card"> 
         <h2>Your weekly CO2 emissions</h2>
         <p><strong>{{ result }} kg</strong></p>
     </div>   
     {% endif %}
     
-    {% if distance %}
+    {% if distance is not None %}
         <p>Distance calculated: {{ distance }} km</p>
     {% endif %}
 

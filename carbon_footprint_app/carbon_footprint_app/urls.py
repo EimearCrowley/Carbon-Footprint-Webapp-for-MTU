@@ -18,7 +18,10 @@ from django.contrib import admin
 from django.urls import path
 from carbon_app.views import index
 
+# if user goes here, run this function in views
+# user visits site homepage, calls index function in views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index, name='index'),  # show index view when on homepage
+    path('', index, name='index'),  # show index view when on homepage, calls index from views, gives URL a name that can be referenced in templates
 ]

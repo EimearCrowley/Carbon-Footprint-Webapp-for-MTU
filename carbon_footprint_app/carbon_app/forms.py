@@ -1,3 +1,5 @@
+# define forms as classes
+
 from django import forms
 
 TRANSPORT_CHOICES = [

@@ -1,3 +1,8 @@
+/* 
+doesn't change per user/request, fixed
+
+*/
+
 body {
     font-family: 'Times New Roman', Times, serif;
     max-width: 600px;

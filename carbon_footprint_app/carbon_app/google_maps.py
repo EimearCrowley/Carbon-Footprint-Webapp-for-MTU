@@ -12,6 +12,7 @@ def get_distance_km(origin, destination):
         "key": api_key,
     }
     response = requests.get(url, params=params).json()
+    print("Google Maps API response:", response)  # Debugging statement
 
     try:
         distance_meters = response["rows"][0]["elements"][0]["distance"]["value"]
