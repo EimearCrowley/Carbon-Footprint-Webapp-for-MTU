@@ -24,6 +24,7 @@
       document.querySelectorAll('input[name="fuel_type"]').forEach(radio => {
         radio.addEventListener('change', updateEngineOptions);
       });
+      updateEngineOptions();
     });
   </script>
 </head>
@@ -42,27 +43,23 @@
 
   <hr>
 
-  <div id="engine-petrol-diesel" style="display:none;">
+<div id="engine-petrol-diesel" style="display:none;">
   <h4>Engine Size</h4>
-  {% for radio in form.engine_option %}
-    {% if radio.choice_value in petrol_diesel_engines %}
-      <label>
-        {{ radio.tag }}
-        {{ radio.choice_label }}
-      </label><br>
-    {% endif %}
+  {% for value, label in petrol_diesel_engines %}
+    <label>
+      <input type="radio" name="engine_option" value="{{ value }}">
+      {{ label }}
+    </label><br>
   {% endfor %}
 </div>
 
   <div id="engine-electric" style="display:none;">
   <h4>Electric Type</h4>
-  {% for radio in form.engine_option %}
-    {% if radio.choice_value in electric_engines %}
-      <label>
-        {{ radio.tag }}
-        {{ radio.choice_label }}
-      </label><br>
-    {% endif %}
+  {% for value, label in electric_engines %}
+    <label>
+      <input type="radio" name="engine_option" value="{{ value }}">
+      {{ label }}
+    </label><br>
   {% endfor %}
 </div>
 

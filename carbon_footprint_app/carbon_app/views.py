@@ -28,8 +28,18 @@ def transport_details_view(request):
     else:
         form = TransportDetailsForm()
 
-    petrol_diesel_engines = ['1.0L', '1.2L', '1.4L', '1.6L', '2.0L+']
-    electric_engines = ['Hybrid', 'Fully Electric']
+    petrol_diesel_engines = [
+        ('1.0L','1.0L'),
+        ('1.2L','1.2L'),
+        ('1.4L','1.4L'),
+        ('1.6L','1.6L'),
+        ('2.0L+','2.0L+'),
+    ]
+
+    electric_engines = [
+        ('Hybrid','Hybrid'), 
+        ('Fully Electric','Fully Electric'),
+    ]
 
     return render(request, "transport_details.html", {
         "form": form,
@@ -84,7 +94,7 @@ def results_view(request):
 
     try:
         factor = emission_factors[fuel_type][engine_option]
-        weekly_emissions = distance_km * 2 * days * factor  # round trip
+        weekly_emissions = distance_km * 2 * days * factor  # round trip, NEED TO CHANGE TO DAILY
     except Exception:
         weekly_emissions = None
 
