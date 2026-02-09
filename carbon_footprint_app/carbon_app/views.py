@@ -1,31 +1,117 @@
-from django.shortcuts import render, HttpResponse
-from .forms import LocationForm
-from .utils import calculate_emissions
+from django.shortcuts import render, redirect
+from .forms import TransportDetailsForm, ModeSelectionForm
 from .google_maps import get_distance_km
+
 
 # Contains logic that runs when a user visits a page
 # Create your views here.
 
-def index(request):
-    result = None
-    distance = None
+def mode_selection_view(request):
+    if request.method == "POST":
+        form = ModeSelectionForm(request.POST)
+        if form.is_valid():
+            request.session['mode_1'] = form.cleaned_data['mode_1']
+            request.session['duo_mode'] = form.cleaned_data['duo_mode']
+            request.session['mode_2'] = form.cleaned_data.get('mode_2')
+            return redirect('transport_details')
+    else:
+        form = ModeSelectionForm()
+    return render(request, "mode_selection.html", {"form": form})
 
-    if request.method == "POST":            # when user clicks calculate button
-        form = LocationForm(request.POST)   # populates the form in the variable form
-        if form.is_valid():                 # checks if all fields are valid
-            days = form.cleaned_data["days"]
-            mode = form.cleaned_data["mode"]
-            origin = form.cleaned_data["origin"]
-            destination = form.cleaned_data["destination"] 
-            distance = get_distance_km(origin, destination)
+def transport_details_view(request):
+    if request.method == "POST":
+        form = TransportDetailsForm(request.POST)
+        if form.is_valid():
+            request.session['fuel_type'] = form.cleaned_data['fuel_type']
+            request.session['engine_option'] = form.cleaned_data['engine_option']
+            return redirect('route_days')
+    else:
+        form = TransportDetailsForm()
 
-            if distance:                    # checks if distance is not None
-                result = calculate_emissions(distance, days, mode)  # calls function to calculate emissions
-    else:                                   # runs when user first visits page
-        form = LocationForm()
-# render index.html and pass it form, result and distance (template sees the left hand side variables)
-    return render(request, "index.html", {
-        "form": form, 
-        "result": result,
-        "distance": distance,
+    petrol_diesel_engines = ['1.0L', '1.2L', '1.4L', '1.6L', '2.0L+']
+    electric_engines = ['Hybrid', 'Fully Electric']
+
+    return render(request, "transport_details.html", {
+        "form": form,
+        "petrol_diesel_engines": petrol_diesel_engines,
+        "electric_engines": electric_engines
+        })
+
+def route_days_view(request):
+    if request.method == "POST":
+        origin = request.POST.get('origin')
+        destination = request.POST.get('destination')
+        days = request.POST.get('days')
+
+        request.session['origin'] = origin
+        request.session['destination'] = destination
+        request.session['days'] = days
+
+        return redirect('results')
+    return render(request, "route_days.html")
+
+def results_view(request):
+    print("Session contents:", dict(request.session))  # Debugging statement to check session contents
+    fuel_type = request.session.get('fuel_type')
+    engine_option = request.session.get('engine_option')
+    origin = request.session.get('origin')
+    destination = request.session.get('destination')
+    days_raw = request.session.get('days')
+    days = int(days_raw) if days_raw is not None else 0
+
+    distance_km =  get_distance_km(origin, destination)
+
+    emission_factors = {
+        'petrol': {
+            '1.0L': 0.12,
+            '1.2L': 0.14,
+            '1.4L': 0.16,
+            '1.6L': 0.18,
+            '2.0L+': 0.22,
+        },
+        'diesel': {
+            '1.0L': 0.11,
+            '1.2L': 0.13,
+            '1.4L': 0.15,
+            '1.6L': 0.17,
+            '2.0L+': 0.20,
+        },
+        'electric': {
+            'Hybrid': 0.05,
+            'Fully Electric': 0.02,
+        }
+    }
+
+    try:
+        factor = emission_factors[fuel_type][engine_option]
+        weekly_emissions = distance_km * 2 * days * factor  # round trip
+    except Exception:
+        weekly_emissions = None
+
+    request.session['distance_km'] = distance_km
+    request.session['weekly_emissions'] = weekly_emissions  
+
+    return render(request, 'results.html', {
+        'origin': origin,
+        'destination': destination,
+        'days': days,
+        'distance_km': distance_km,
+        'weekly_emissions': weekly_emissions,
+        'fuel_type': fuel_type,
+        'engine_option': engine_option,
     })
+
+def summary_view(request):
+    context = {
+        'mode_1': request.session.get('mode_1'),
+        'duo_mode': request.session.get('duo_mode'),
+        'mode_2': request.session.get('mode_2'),
+        'fuel_type': request.session.get('fuel_type'),
+        'engine_option': request.session.get('engine_option'),
+        'origin': request.session.get('origin'),
+        'destination': request.session.get('destination'),
+        'days': request.session.get('days'),
+        'distance_km': request.session.get('distance_km'),
+        'weekly_emissions': request.session.get('weekly_emissions'),
+    }
+    return render(request, 'summary.html', context)

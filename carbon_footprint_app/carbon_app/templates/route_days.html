@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Route & Days</title>
+  <link rel="stylesheet" href="{% static 'carbon_app/style.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+  <h2>Screen 3: Route & Days</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="origin" class="form-label"><strong>Origin:</strong></label>
+      <input type="text" class="form-control" id="origin" name="origin" placeholder="e.g., Cork" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="destination" class="form-label"><strong>Destination:</strong></label>
+      <input type="text" class="form-control" id="destination" name="destination" placeholder="e.g., MTU" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="days" class="form-label"><strong>Days per week you travel this route:</strong></label>
+      <input type="number" class="form-control" id="days" name="days" min="1" max="7" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Next</button>
+  </form>
+</body>
+</html>

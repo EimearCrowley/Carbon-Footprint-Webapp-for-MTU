@@ -15,13 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from carbon_app.views import index
+from django.urls import path, include
 
 # if user goes here, run this function in views
 # user visits site homepage, calls index function in views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index, name='index'),  # show index view when on homepage, calls index from views, gives URL a name that can be referenced in templates
+    path('', include('carbon_app.urls')),  # show index view when on homepage, calls index from views, gives URL a name that can be referenced in templates
 ]
