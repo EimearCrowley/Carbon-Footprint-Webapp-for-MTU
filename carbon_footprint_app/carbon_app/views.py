@@ -1,31 +1,47 @@
 from django.shortcuts import render, HttpResponse
-from .forms import LocationForm
-from .utils import calculate_emissions
-from .google_maps import get_distance_km
 
-# Contains logic that runs when a user visits a page
+from .utils import calculate_emissions
+from google_maps import get_distance_km
+
+
 # Create your views here.
 
-def index(request):
-    result = None
-    distance = None
+from django.shortcuts import render, redirect
+from forms import ModeSelectionForm, TransportDetailsForm, RouteDaysForm
 
-    if request.method == "POST":            # when user clicks calculate button
-        form = LocationForm(request.POST)   # populates the form in the variable form
-        if form.is_valid():                 # checks if all fields are valid
-            days = form.cleaned_data["days"]
-            mode = form.cleaned_data["mode"]
-            origin = form.cleaned_data["origin"]
-            destination = form.cleaned_data["destination"] 
-            distance = get_distance_km(origin, destination)
+def mode_selection_view(request):
+    return HttpResponse("SCREEN 1: Mode Selection")
+    # if request.method == 'POST':
+    #     form = ModeSelectionForm(request.POST)
+    #     if form.is_valid():
+    #         request.session['mode_1'] = form.cleaned_data['mode_1']
+    #         request.session['duo_mode'] = form.cleaned_data['duo_mode']
+    #         request.session['mode_2'] = form.cleaned_data.get('mode_2')
+    #         return redirect('transport_details')
+    # else:
+    #     form = ModeSelectionForm()
+    # return render(request, 'mode_selection.html', {'form': form})
 
-            if distance:                    # checks if distance is not None
-                result = calculate_emissions(distance, days, mode)  # calls function to calculate emissions
-    else:                                   # runs when user first visits page
-        form = LocationForm()
-# render index.html and pass it form, result and distance (template sees the left hand side variables)
-    return render(request, "index.html", {
-        "form": form, 
-        "result": result,
-        "distance": distance,
-    })
+def transport_details_view(request):
+    if request.method == 'POST':
+        form = TransportDetailsForm(request.POST)
+        if form.is_valid():
+            request.session['fuel_type'] = form.cleaned_data['fuel_type']
+            request.session['engine_option'] = form.cleaned_data['engine_option']
+            return redirect('route_days')  # Next screen
+    else:
+        form = TransportDetailsForm()
+    return render(request, 'transport_details.html', {'form': form})
+
+def route_days_view(request):
+    if request.method == 'POST':
+        form = RouteDaysForm(request.POST)
+        if form.is_valid():
+            request.session['start_location'] = form.cleaned_data['start_location']
+            request.session['destination'] = form.cleaned_data['destination']
+            request.session['travel_days'] = form.cleaned_data['travel_days']
+            return redirect('daily_result')  # Next screen
+    else:
+        form = RouteDaysForm()
+    return render(request, 'route_days.html', {'form': form})
+
