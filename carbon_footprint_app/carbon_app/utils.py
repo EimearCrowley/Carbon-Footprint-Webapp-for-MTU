@@ -8,6 +8,7 @@ EMISSION_FACTORS = {
     # "e-bike/scooter": ____
     "bike": 0.0,
     "walk": 0.0,
+    'scooter': 105 # electric scooter or e-bike
 }
 
 def calculate_emissions(distance,days,mode):

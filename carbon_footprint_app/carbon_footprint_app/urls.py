@@ -23,9 +23,11 @@ from django.urls import path, include
 from django.contrib import admin
 from django.urls import path, include
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('carbon_app.urls')),  # show index view when on homepage, calls index from views, gives URL a name that can be referenced in templates
+    path('', include('carbon_app.urls')),  # Replace 'carbon_app' with your actual app name
 ]
+
 
 

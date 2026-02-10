@@ -5,18 +5,28 @@ from .google_maps import get_distance_km
 
 # Contains logic that runs when a user visits a page
 # Create your views here.
+from django.shortcuts import render, redirect
+
 
 def mode_selection_view(request):
     if request.method == "POST":
         form = ModeSelectionForm(request.POST)
         if form.is_valid():
-            request.session['mode_1'] = form.cleaned_data['mode_1']
+            mode = form.cleaned_data['mode_1']
+            request.session['mode_1'] = mode
             request.session['duo_mode'] = form.cleaned_data['duo_mode']
             request.session['mode_2'] = form.cleaned_data.get('mode_2')
-            return redirect('transport_details')
+
+            if mode == 'car':
+                return redirect('transport_details')  # ✅ use existing view
+            else:
+                return redirect('route_days')
     else:
         form = ModeSelectionForm()
     return render(request, "mode_selection.html", {"form": form})
+
+
+
 
 def transport_details_view(request):
     if request.method == "POST":

@@ -1,63 +1,128 @@
-/* 
-doesn't change per user/request, fixed
-
-*/
-
-body {
-    font-family: 'Times New Roman', Times, serif;
-    max-width: 600px;
-    margin: 40x auto;
-    padding: 20px;
-    background: #d4edda;
+/* Global layout */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #e8f5e9;
+  display: flex;
+  flex-direction: column;
 }
 
-h1 {
-    text-align: center;
-    color: #2c3e50;
+/* Wrapper to stretch content */
+.fullscreen-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Navigation bar */
+.navbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #ddd;
+  padding: 0.75rem 2rem;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  color: #2e7d32;
+  font-size: 1.5rem;
+}
+
+.nav-link {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+/* Hero section */
+.hero {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  color: #2e7d32;
+  margin-bottom: 0.5rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+/* Transport mode grid */
+.mode-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem 1rem;
+}
+
+.mode-button {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: border 0.2s;
+}
+
+.mode-button.selected {
+  border-color: #2e7d32;
+}
+
+.mode-label {
+  text-align: center;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+/* Form and button */
 form {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(18, 142, 63, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
 }
 
 button {
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 button:hover {
-    background: #27ae60;
+  background: #27ae60;
 }
 
-h2 {
-    margin-top: 30px;
-    text-align: center;
-    color: #34495e;
+.next-button {
+  margin-top: auto;
+  margin-bottom: 2rem;
 }
 
+/* Results section */
 .result-card {
-    margin-top: 30px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(19, 134, 34, 0.1);
+  margin-top: 30px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(19, 134, 34, 0.1);
 }
 
 .result-card h2 {
-    color: #2c3e50;
-    margin-bottom: 10px;
+  color: #2c3e50;
+  margin-bottom: 10px;
 }
 
 .result-card p {
-    font-size: 1.4em;
-    color: #27ae60;
-    margin: 0;
+  font-size: 1.4em;
+  color: #27ae60;
+  margin: 0;
 }
