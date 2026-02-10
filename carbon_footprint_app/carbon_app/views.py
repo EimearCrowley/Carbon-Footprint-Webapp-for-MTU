@@ -1,13 +1,9 @@
 from django.shortcuts import render, redirect
 from .forms import TransportDetailsForm, ModeSelectionForm
 from .google_maps import get_distance_km
+from .forms import RouteDaysForm  # Add this import
 
-
-# Contains logic that runs when a user visits a page
-# Create your views here.
-from django.shortcuts import render, redirect
-
-
+# View for selecting transport mode
 def mode_selection_view(request):
     if request.method == "POST":
         form = ModeSelectionForm(request.POST)
@@ -18,17 +14,18 @@ def mode_selection_view(request):
             request.session['mode_2'] = form.cleaned_data.get('mode_2')
 
             if mode == 'car':
-                return redirect('transport_details')  # ✅ use existing view
+                return redirect('transport_details')  # Go to fuel type screen
             else:
-                return redirect('route_days')
+                return redirect('route_days')  # Skip fuel screen
     else:
         form = ModeSelectionForm()
     return render(request, "mode_selection.html", {"form": form})
 
-
-
-
+# View for selecting fuel type and engine (only for cars)
 def transport_details_view(request):
+    if request.session.get('mode_1') != 'car':
+        return redirect('route_days')  # Prevent access if not car
+
     if request.method == "POST":
         form = TransportDetailsForm(request.POST)
         if form.is_valid():
@@ -39,39 +36,43 @@ def transport_details_view(request):
         form = TransportDetailsForm()
 
     petrol_diesel_engines = [
-        ('1.0L','1.0L'),
-        ('1.2L','1.2L'),
-        ('1.4L','1.4L'),
-        ('1.6L','1.6L'),
-        ('2.0L+','2.0L+'),
+        ('1.0L', '1.0L'),
+        ('1.2L', '1.2L'),
+        ('1.4L', '1.4L'),
+        ('1.6L', '1.6L'),
+        ('2.0L+', '2.0L+'),
     ]
 
     electric_engines = [
-        ('Hybrid','Hybrid'), 
-        ('Fully Electric','Fully Electric'),
+        ('Hybrid', 'Hybrid'),
+        ('Fully Electric', 'Fully Electric'),
     ]
 
     return render(request, "transport_details.html", {
         "form": form,
         "petrol_diesel_engines": petrol_diesel_engines,
         "electric_engines": electric_engines
-        })
+    })
 
+# View for entering route and number of days
 def route_days_view(request):
     if request.method == "POST":
-        origin = request.POST.get('origin')
-        destination = request.POST.get('destination')
-        days = request.POST.get('days')
+        form = RouteDaysForm(request.POST)
+        if form.is_valid():
+            request.session['origin'] = form.cleaned_data['origin']
+            request.session['destination'] = form.cleaned_data['destination']
+            request.session['days'] = form.cleaned_data['days_per_week']
+            return redirect('results')
+    else:
+        form = RouteDaysForm()
 
-        request.session['origin'] = origin
-        request.session['destination'] = destination
-        request.session['days'] = days
+    return render(request, "route_days.html", {"form": form})
 
-        return redirect('results')
-    return render(request, "route_days.html")
 
+# View for calculating and displaying results
 def results_view(request):
-    print("Session contents:", dict(request.session))  # Debugging statement to check session contents
+    print("Session contents:", dict(request.session))  # Debugging
+
     fuel_type = request.session.get('fuel_type')
     engine_option = request.session.get('engine_option')
     origin = request.session.get('origin')
@@ -79,7 +80,7 @@ def results_view(request):
     days_raw = request.session.get('days')
     days = int(days_raw) if days_raw is not None else 0
 
-    distance_km =  get_distance_km(origin, destination)
+    distance_km = get_distance_km(origin, destination)
 
     emission_factors = {
         'petrol': {
@@ -104,12 +105,12 @@ def results_view(request):
 
     try:
         factor = emission_factors[fuel_type][engine_option]
-        weekly_emissions = distance_km * 2 * days * factor  # round trip, NEED TO CHANGE TO DAILY
+        weekly_emissions = distance_km * 2 * days * factor  # round trip
     except Exception:
         weekly_emissions = None
 
     request.session['distance_km'] = distance_km
-    request.session['weekly_emissions'] = weekly_emissions  
+    request.session['weekly_emissions'] = weekly_emissions
 
     return render(request, 'results.html', {
         'origin': origin,
@@ -121,6 +122,7 @@ def results_view(request):
         'engine_option': engine_option,
     })
 
+# View for displaying summary
 def summary_view(request):
     context = {
         'mode_1': request.session.get('mode_1'),
@@ -135,3 +137,4 @@ def summary_view(request):
         'weekly_emissions': request.session.get('weekly_emissions'),
     }
     return render(request, 'summary.html', context)
+

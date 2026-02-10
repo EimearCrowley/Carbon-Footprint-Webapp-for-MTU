@@ -58,3 +58,23 @@ class TransportDetailsForm(forms.Form):
     engine_option = forms.ChoiceField(
         choices=ENGINE_CHOICES_PETROL_DIESEL + ENGINE_CHOICES_ELECTRIC,
         widget=forms.RadioSelect)
+    
+
+class RouteDaysForm(forms.Form):
+    origin = forms.CharField(
+        label='Start Location',
+        max_length=100,
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. Cork City'})
+    )
+    destination = forms.CharField(
+        label='Destination',
+        max_length=100,
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. MTU Bishopstown'})
+    )
+    days_per_week = forms.IntegerField(
+        label='Days per week',
+        min_value=1,
+        max_value=7,
+        widget=forms.NumberInput(attrs={'placeholder': 'e.g. 5'})
+    )
+

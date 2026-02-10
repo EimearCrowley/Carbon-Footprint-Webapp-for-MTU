@@ -1,71 +1,211 @@
-{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Transport Details</title>
-  <link rel="stylesheet" href="{% static 'carbon_app/style.css' %}">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Carbon Travel Calculator</title>
+  {% load static %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #27ae60;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 30px;
+    }
+
+    .radio-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .radio-option {
+      flex: 1 1 calc(33.333% - 10px);
+      background-color: #ecf0f1;
+      padding: 20px 10px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      font-size: 16px;
+      color: #2c3e50;
+      min-width: 100px;
+    }
+
+    .radio-option input {
+      display: none;
+    }
+
+    .radio-option span.icon {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #2c3e50;
+    }
+
+    .radio-option.selected {
+      background-color: #27ae60;
+      color: white;
+    }
+
+    .radio-option.selected .icon {
+      color: white;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background-color: #219150;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Carbon Travel Calculator</h1>
+    <h2>Select Your Transport Details</h2>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>What fuel does your car use?</label>
+        <div class="radio-group" id="fuel-options">
+          {% for value, label in form.fuel_type.field.choices %}
+            <label class="radio-option">
+              <input type="radio" name="fuel_type" value="{{ value }}">
+              <span class="icon">
+                {% if value == 'petrol' %}⛽{% elif value == 'diesel' %}🛢️{% elif value == 'electric' %}🔌{% endif %}
+              </span>
+              {{ label }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group" id="petrol-diesel-options" style="display: none;">
+        <label>Select your engine size:</label>
+        <div class="radio-group">
+          {% for value, label in petrol_diesel_engines %}
+            <label class="radio-option">
+              <input type="radio" name="engine_option" value="{{ value }}">
+              {{ label }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group" id="electric-options" style="display: none;">
+        <label>Select your electric type:</label>
+        <div class="radio-group">
+          {% for value, label in electric_engines %}
+            <label class="radio-option">
+              <input type="radio" name="engine_option" value="{{ value }}">
+              {{ label }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Next</button>
+    </form>
+  </div>
+
   <script>
-    function updateEngineOptions() {
-      const fuel = document.querySelector('input[name="fuel_type"]:checked')?.value;
+    const fuelRadios = document.querySelectorAll('input[name="fuel_type"]');
+    const fuelOptions = document.querySelectorAll('#fuel-options .radio-option');
+    const engineOptions = document.querySelectorAll('.radio-option input[name="engine_option"]');
+    const petrolDieselDiv = document.getElementById('petrol-diesel-options');
+    const electricDiv = document.getElementById('electric-options');
 
-      document.getElementById('engine-petrol-diesel').style.display =
-        (fuel === 'petrol' || fuel === 'diesel') ? 'block' : 'none';
+    function toggleEngineOptions() {
+      const selected = document.querySelector('input[name="fuel_type"]:checked');
+      if (!selected) return;
 
-      document.getElementById('engine-electric').style.display =
-        (fuel === 'electric') ? 'block' : 'none';
+      fuelOptions.forEach(option => {
+        option.classList.remove('selected');
+        if (option.querySelector('input').value === selected.value) {
+          option.classList.add('selected');
+        }
+      });
 
-      document.querySelectorAll('input[name="engine_option"]').forEach(radio => {
-        radio.checked = false;
+      if (selected.value === 'petrol' || selected.value === 'diesel') {
+        petrolDieselDiv.style.display = 'block';
+        electricDiv.style.display = 'none';
+      } else if (selected.value === 'electric') {
+        petrolDieselDiv.style.display = 'none';
+        electricDiv.style.display = 'block';
+      } else {
+        petrolDieselDiv.style.display = 'none';
+        electricDiv.style.display = 'none';
+      }
+
+      document.querySelectorAll('input[name="engine_option"]').forEach(input => {
+        input.checked = false;
+        input.closest('.radio-option')?.classList.remove('selected');
       });
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-      document.querySelectorAll('input[name="fuel_type"]').forEach(radio => {
-        radio.addEventListener('change', updateEngineOptions);
+    function setupRadioHighlighting() {
+      document.querySelectorAll('.radio-option input').forEach(input => {
+        input.addEventListener('change', () => {
+          document.querySelectorAll(`input[name="${input.name}"]`).forEach(i => {
+            i.closest('.radio-option')?.classList.remove('selected');
+          });
+          input.closest('.radio-option')?.classList.add('selected');
+        });
       });
-      updateEngineOptions();
+    }
+
+    fuelRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        toggleEngineOptions();
+        setupRadioHighlighting();
+      });
     });
+
+    window.onload = () => {
+      toggleEngineOptions();
+      setupRadioHighlighting();
+    };
   </script>
-</head>
-<body class="container mt-5">
-  <h2>Select Your Transport Details</h2>
-  <form method="post">
-  {% csrf_token %}
-
-  <h4>Fuel Type</h4>
-  {% for radio in form.fuel_type %}
-    <label>
-      {{ radio.tag }}
-      {{ radio.choice_label }}
-    </label><br>
-  {% endfor %}
-
-  <hr>
-
-<div id="engine-petrol-diesel" style="display:none;">
-  <h4>Engine Size</h4>
-  {% for value, label in petrol_diesel_engines %}
-    <label>
-      <input type="radio" name="engine_option" value="{{ value }}">
-      {{ label }}
-    </label><br>
-  {% endfor %}
-</div>
-
-  <div id="engine-electric" style="display:none;">
-  <h4>Electric Type</h4>
-  {% for value, label in electric_engines %}
-    <label>
-      <input type="radio" name="engine_option" value="{{ value }}">
-      {{ label }}
-    </label><br>
-  {% endfor %}
-</div>
-
-  <button type="submit" class="btn btn-primary mt-3">
-    Next
-  </button>
-</form>
 </body>
 </html>
