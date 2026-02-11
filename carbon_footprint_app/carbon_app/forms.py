@@ -1,6 +1,28 @@
 from django import forms
 
+<<<<<<< HEAD
 # Shared choices
+=======
+class ModeSelectionForm(forms.Form):
+    MODE_CHOICES = [
+        ('car', 'Car'),
+        ('bus', 'Bus'),
+        ('bike', 'Bike'),
+        ('walk', 'Walk'),
+        ('train', 'Train'),
+    ]
+    mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
+    duo_mode = forms.BooleanField(required=False, label="Use two modes of transport?")
+    mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
+
+class TransportDetailsForm(forms.Form):
+    fuel_type = forms.ChoiceField(
+        choices=[('petrol', 'Petrol'), ('diesel', 'Diesel'), ('electric', 'Electric')],
+        widget=forms.RadioSelect(attrs={'class': 'fuel-type'})
+    )
+    engine_option = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+>>>>>>> ac1f2bfb6f88ed4c92ac7c19c97ba313fb41256d
 MODE_CHOICES = [ 
     ('car', 'Car'), 
     ('bus', 'Bus'), 
@@ -28,6 +50,7 @@ ENGINE_CHOICES_ELECTRIC = [
     ('Fully Electric','Fully Electric')
 ]
 
+<<<<<<< HEAD
 class ModeSelectionForm(forms.Form):
     MODE_CHOICES = [
         ('car', 'Car'),
@@ -67,6 +90,19 @@ class TransportDetailsForm(forms.Form):
         choices=ENGINE_CHOICES_PETROL_DIESEL + ENGINE_CHOICES_ELECTRIC,
         widget=forms.RadioSelect
     )
+=======
+# class ModeSelectionForm(forms.Form):
+#     mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
+#     duo_mode = forms.BooleanField(required=False, label="Do you use a secondary mode of transport?")
+#     mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
+
+# class TransportDetailsForm(forms.Form):
+#     fuel_type = forms.ChoiceField(choices=FUEL_CHOICES, widget=forms.RadioSelect)
+#     engine_option = forms.ChoiceField(
+#         choices=ENGINE_CHOICES_PETROL_DIESEL + ENGINE_CHOICES_ELECTRIC,
+#         widget=forms.RadioSelect)
+    
+>>>>>>> ac1f2bfb6f88ed4c92ac7c19c97ba313fb41256d
 
 # ✅ Route days form (location + optional secondary location)
 class RouteDaysForm(forms.Form):

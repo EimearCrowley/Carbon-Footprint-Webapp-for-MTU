@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
 from .forms import TransportDetailsForm, ModeSelectionForm
 from .google_maps import get_distance_km
-from .forms import RouteDaysForm  # Add this import
+from .forms import RouteDaysForm 
+import re
 
-# View for selecting transport mode
+
 def mode_selection_view(request):
     if request.method == "POST":
         form = ModeSelectionForm(request.POST)
@@ -21,7 +22,7 @@ def mode_selection_view(request):
         form = ModeSelectionForm()
     return render(request, "mode_selection.html", {"form": form})
 
-# View for selecting fuel type and engine (only for cars)
+
 def transport_details_view(request):
     if request.session.get('mode_1') != 'car':
         return redirect('route_days')  # Prevent access if not car
@@ -54,14 +55,36 @@ def transport_details_view(request):
         "electric_engines": electric_engines
     })
 
-# View for entering route and number of days
+
+def is_eircode(value):
+    cleaned_origin = value.replace(" ", "").upper()
+
+    pattern = r'^[A-Z0-9]{7}$'
+
+    if re.match(pattern, cleaned_origin):
+        return cleaned_origin[:3] + " " + cleaned_origin[3:]
+    
+    return None
+
+
 def route_days_view(request):
     if request.method == "POST":
         form = RouteDaysForm(request.POST)
         if form.is_valid():
-            request.session['origin'] = form.cleaned_data['origin']
-            request.session['destination'] = form.cleaned_data['destination']
-            request.session['days'] = form.cleaned_data['days_per_week']
+            origin = form.cleaned_data['origin']
+            destination = form.cleaned_data['destination']
+            days = form.cleaned_data['days_per_week']
+
+            formatted_origin = is_eircode(origin)
+            if formatted_origin:    # if formatted_origin is not None
+                origin = formatted_origin
+            else:
+                origin = origin.title()
+
+            request.session['origin'] = origin
+            request.session['destination'] = destination
+            request.session['days'] = days
+
             return redirect('results')
     else:
         form = RouteDaysForm()
@@ -69,10 +92,7 @@ def route_days_view(request):
     return render(request, "route_days.html", {"form": form})
 
 
-# View for calculating and displaying results
 def results_view(request):
-    print("Session contents:", dict(request.session))  # Debugging
-
     fuel_type = request.session.get('fuel_type')
     engine_option = request.session.get('engine_option')
     origin = request.session.get('origin')
@@ -122,7 +142,7 @@ def results_view(request):
         'engine_option': engine_option,
     })
 
-# View for displaying summary
+
 def summary_view(request):
     context = {
         'mode_1': request.session.get('mode_1'),
