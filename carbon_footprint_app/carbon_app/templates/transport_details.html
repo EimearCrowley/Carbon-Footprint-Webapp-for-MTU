@@ -111,7 +111,7 @@
         <div class="radio-group" id="fuel-options">
           {% for value, label in form.fuel_type.field.choices %}
             <label class="radio-option">
-              <input type="radio" name="fuel_type" value="{{ value }}">
+              <input type="radio" name="fuel_type" value="{{ value }}" required>
               <span class="icon">
                 {% if value == 'petrol' %}⛽{% elif value == 'diesel' %}🛢️{% elif value == 'electric' %}🔌{% endif %}
               </span>
@@ -126,7 +126,7 @@
         <div class="radio-group">
           {% for value, label in petrol_diesel_engines %}
             <label class="radio-option">
-              <input type="radio" name="engine_option" value="{{ value }}">
+              <input type="radio" name="engine_option" value="{{ value }}" required>
               {{ label }}
             </label>
           {% endfor %}
@@ -138,7 +138,7 @@
         <div class="radio-group">
           {% for value, label in electric_engines %}
             <label class="radio-option">
-              <input type="radio" name="engine_option" value="{{ value }}">
+              <input type="radio" name="engine_option" value="{{ value }}" required>
               {{ label }}
             </label>
           {% endfor %}

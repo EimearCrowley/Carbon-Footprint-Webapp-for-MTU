@@ -19,8 +19,6 @@ class TransportDetailsForm(forms.Form):
     )
     engine_option = forms.CharField(widget=forms.HiddenInput(), required=False)
 
-from django import forms
-
 MODE_CHOICES = [ 
     ('car', 'Car'), 
     ('bus', 'Bus'), 
@@ -48,16 +46,16 @@ ENGINE_CHOICES_ELECTRIC = [
     ('Fully Electric','Fully Electric')
 ]
 
-class ModeSelectionForm(forms.Form):
-    mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
-    duo_mode = forms.BooleanField(required=False, label="Do you use a secondary mode of transport?")
-    mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
+# class ModeSelectionForm(forms.Form):
+#     mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
+#     duo_mode = forms.BooleanField(required=False, label="Do you use a secondary mode of transport?")
+#     mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
 
-class TransportDetailsForm(forms.Form):
-    fuel_type = forms.ChoiceField(choices=FUEL_CHOICES, widget=forms.RadioSelect)
-    engine_option = forms.ChoiceField(
-        choices=ENGINE_CHOICES_PETROL_DIESEL + ENGINE_CHOICES_ELECTRIC,
-        widget=forms.RadioSelect)
+# class TransportDetailsForm(forms.Form):
+#     fuel_type = forms.ChoiceField(choices=FUEL_CHOICES, widget=forms.RadioSelect)
+#     engine_option = forms.ChoiceField(
+#         choices=ENGINE_CHOICES_PETROL_DIESEL + ENGINE_CHOICES_ELECTRIC,
+#         widget=forms.RadioSelect)
     
 
 class RouteDaysForm(forms.Form):
