@@ -66,11 +66,22 @@ class RouteDaysForm(forms.Form):
         max_length=100,
         widget=forms.TextInput(attrs={'placeholder': 'e.g. Cork City'})
     )
-    destination = forms.CharField(
-        label='Destination',
-        max_length=100,
-        widget=forms.TextInput(attrs={'placeholder': 'e.g. MTU Bishopstown'})
+
+    CAR_PARK_CHOICES = [
+        ("bishopstown", "Bishopstown Main 🅿️"),
+        ("sports_hall", "Sports Hall 🏋️‍♂️"),
+        ("student_centre", "Student Centre 🎓"),
+        ("park_ride", "Park & Ride 🚌"),
+        ("st_finbarrs", "St Finbarr’s 🏛️"),
+        ("carrolls_quay", "Carroll’s Quay 🌉"),
+    ]
+
+    destination = forms.ChoiceField(
+        choices=CAR_PARK_CHOICES,
+        widget=forms.RadioSelect,
+        label="Select Destination Car Park"
     )
+
     days_per_week = forms.IntegerField(
         label='Days per week',
         min_value=1,

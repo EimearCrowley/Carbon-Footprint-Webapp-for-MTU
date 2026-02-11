@@ -26,16 +26,17 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
-    h1 {
+    h1, h2 {
       text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
       color: #2c3e50;
-      margin-bottom: 10px;
     }
 
     h2 {
-      text-align: center;
       color: #27ae60;
-      margin-bottom: 30px;
     }
 
     .form-group {
@@ -69,6 +70,48 @@
       flex: 1 1 45%;
     }
 
+    .mode-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .mode-option {
+      width: 120px;
+      height: 110px;
+      border-radius: 12px;
+      background-color: #ecf0f1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      border: 3px solid transparent;
+      text-align: center;
+    }
+
+    .mode-option.selected {
+      background-color: #27ae60;
+      border-color: #27ae60;
+    }
+
+    .mode-option .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .mode-option span {
+      font-size: 14px;
+      color: #2c3e50;
+    }
+
+    .mode-option.selected span {
+      color: white;
+      font-weight: bold;
+    }
+
     .btn {
       width: 100%;
       padding: 14px;
@@ -99,10 +142,22 @@
           <label for="origin">Start Location</label>
           {{ form.origin }}
         </div>
+      </div>
 
-        <div class="form-group">
-          <label for="destination">Destination</label>
-          {{ form.destination }}
+      <div class="form-group">
+        <label>Select Destination Car Park</label>
+        <div class="mode-grid" id="carpark-options">
+          {% for value, label in form.destination.field.choices %}
+            <label class="mode-option">
+              <input type="radio" name="destination" value="{{ value }}" style="display: none;">
+              <div class="icon">
+                {% if value == 'bishopstown' %}🅿️{% elif value == 'sports_hall' %}🏋️‍♂️
+                {% elif value == 'student_centre' %}🎓{% elif value == 'park_ride' %}🚌
+                {% elif value == 'st_finbarrs' %}🏛️{% elif value == 'carrolls_quay' %}🌉{% endif %}
+              </div>
+              <span>{{ label }}</span>
+            </label>
+          {% endfor %}
         </div>
       </div>
 
@@ -114,5 +169,23 @@
       <button type="submit" class="btn">Next</button>
     </form>
   </div>
+
+  <script>
+    const carparkOptions = document.querySelectorAll('#carpark-options .mode-option');
+    carparkOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        carparkOptions.forEach(opt => opt.classList.remove('selected'));
+        option.classList.add('selected');
+        option.querySelector('input').checked = true;
+      });
+    });
+
+    window.onload = () => {
+      const selected = document.querySelector('input[name="destination"]:checked');
+      if (selected) {
+        selected.closest('.mode-option')?.classList.add('selected');
+      }
+    };
+  </script>
 </body>
 </html>
