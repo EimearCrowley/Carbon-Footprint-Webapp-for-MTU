@@ -1,26 +1,6 @@
 from django import forms
 
-class ModeSelectionForm(forms.Form):
-    MODE_CHOICES = [
-        ('car', 'Car'),
-        ('bus', 'Bus'),
-        ('bike', 'Bike'),
-        ('walk', 'Walk'),
-        ('train', 'Train'),
-    ]
-    mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
-    duo_mode = forms.BooleanField(required=False, label="Use two modes of transport?")
-    mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
-
-class TransportDetailsForm(forms.Form):
-    fuel_type = forms.ChoiceField(
-        choices=[('petrol', 'Petrol'), ('diesel', 'Diesel'), ('electric', 'Electric')],
-        widget=forms.RadioSelect(attrs={'class': 'fuel-type'})
-    )
-    engine_option = forms.CharField(widget=forms.HiddenInput(), required=False)
-
-from django import forms
-
+# Shared choices
 MODE_CHOICES = [ 
     ('car', 'Car'), 
     ('bus', 'Bus'), 
@@ -28,7 +8,7 @@ MODE_CHOICES = [
     ('walk', 'Walk'), 
     ('train', 'Train'),
 ]
-                
+
 FUEL_CHOICES = [
     ('petrol', 'Petrol'),
     ('diesel', 'Diesel'),
@@ -49,17 +29,46 @@ ENGINE_CHOICES_ELECTRIC = [
 ]
 
 class ModeSelectionForm(forms.Form):
-    mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
-    duo_mode = forms.BooleanField(required=False, label="Do you use a secondary mode of transport?")
-    mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
+    MODE_CHOICES = [
+        ('car', 'Car'),
+        ('bus', 'Bus'),
+        ('bike', 'Bike'),
+        ('walk', 'Walk'),
+        ('train', 'Train'),
+    ]
 
+    mode_1 = forms.ChoiceField(
+        choices=MODE_CHOICES,
+        widget=forms.RadioSelect,
+        label="Primary Mode of Transport"
+    )
+
+    duo_mode = forms.BooleanField(
+        required=False,
+        label="Do you use a secondary mode of transport?"
+    )
+
+    mode_2 = forms.ChoiceField(
+        choices=MODE_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+        label="Secondary Mode of Transport"
+    )
+
+
+# ✅ Transport details form
 class TransportDetailsForm(forms.Form):
-    fuel_type = forms.ChoiceField(choices=FUEL_CHOICES, widget=forms.RadioSelect)
+    fuel_type = forms.ChoiceField(
+        choices=FUEL_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'fuel-type'})
+    )
+
     engine_option = forms.ChoiceField(
         choices=ENGINE_CHOICES_PETROL_DIESEL + ENGINE_CHOICES_ELECTRIC,
-        widget=forms.RadioSelect)
-    
+        widget=forms.RadioSelect
+    )
 
+# ✅ Route days form (location + optional secondary location)
 class RouteDaysForm(forms.Form):
     origin = forms.CharField(
         label='Start Location',
@@ -87,5 +96,17 @@ class RouteDaysForm(forms.Form):
         min_value=1,
         max_value=7,
         widget=forms.NumberInput(attrs={'placeholder': 'e.g. 5'})
+    )
+
+    secondary_origin = forms.CharField(
+        required=False,
+        label="Secondary Start Location",
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. Cork Train Station'})
+    )
+
+    secondary_destination = forms.CharField(
+        required=False,
+        label="Secondary Destination",
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. MTU Bishopstown'})
     )
 

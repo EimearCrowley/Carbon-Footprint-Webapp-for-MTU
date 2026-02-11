@@ -166,6 +166,18 @@
         {{ form.days_per_week }}
       </div>
 
+      {% if duo_mode %}
+        <div class="form-group">
+          <label for="secondary_origin">Secondary Start Location</label>
+          {{ form.secondary_origin }}
+        </div>
+
+        <div class="form-group">
+          <label for="secondary_destination">Secondary Destination</label>
+          {{ form.secondary_destination }}
+        </div>
+      {% endif %}
+
       <button type="submit" class="btn">Next</button>
     </form>
   </div>
@@ -189,3 +201,4 @@
   </script>
 </body>
 </html>
+
