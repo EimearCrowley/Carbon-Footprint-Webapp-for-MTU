@@ -59,7 +59,7 @@ def transport_details_view(request):
 def is_eircode(value):
     cleaned_origin = value.replace(" ", "").upper()
 
-    pattern = r'^[A-Z0-9]{7}$'
+    pattern = r'^[A-Z]\d{2}[A-Z0-9]{4}$'
 
     if re.match(pattern, cleaned_origin):
         return cleaned_origin[:3] + " " + cleaned_origin[3:]
