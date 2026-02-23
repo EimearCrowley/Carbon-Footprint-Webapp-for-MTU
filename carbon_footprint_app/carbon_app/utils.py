@@ -6,7 +6,7 @@ EMISSION_FACTORS = {
     "train": 0.041,     # per passenger
     "bike": 0.0, 
     "walk": 0.0, 
-    'scooter': 0.022 # electric scooter or e-bike
+    'escooter': 0.022 # electric scooter or e-bike
 }
 
 def calculate_emissions(distance,days,mode):

@@ -7,6 +7,7 @@ class ModeSelectionForm(forms.Form):
         ('bike', 'Bike'),
         ('walk', 'Walk'),
         ('train', 'Train'),
+        ('scooter', 'E‑Scooter/Bike'),   # NEW OPTION
     ]
     mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
     duo_mode = forms.BooleanField(required=False, label="Use two modes of transport?")
@@ -25,6 +26,7 @@ MODE_CHOICES = [
     ('bike', 'Bike'), 
     ('walk', 'Walk'), 
     ('train', 'Train'),
+    ('scooter', 'E‑Scooter/Bike'),   # NEW OPTION
 ]
 
 FUEL_CHOICES = [
