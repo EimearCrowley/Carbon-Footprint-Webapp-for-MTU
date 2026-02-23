@@ -121,3 +121,7 @@ STATICFILES_DIRS = [ BASE_DIR / "static", ]
 # For development STATICFILES_DIRS = [BASE_DIR / "static"]
 
 GOOGLE_MAPS_API_KEY = "AIzaSyDVqmdzKD2m1ikca439nCrJvvGAtGD4VnA"
+
+#User Login settings
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'home'

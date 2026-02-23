@@ -1,8 +1,17 @@
-from django.urls import path
-from . import views
-
+from django.contrib import admin
+from django.urls import path, include
+from carbon_app import views
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
+
+    # login/logout urls
+    path('accounts/', include('django.contrib.auth.urls')),
+
+    # signup page
+    path('accounts/signup/', views.signup_view, name='signup'),
+
+    # app pages
     path('', views.mode_selection_view, name='mode_selection'),
     path('transport/', views.transport_details_view, name='transport_details'),
     path('route/', views.route_days_view, name='route_days'),

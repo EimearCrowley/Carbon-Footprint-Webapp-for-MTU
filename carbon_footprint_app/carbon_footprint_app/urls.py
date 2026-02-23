@@ -14,27 +14,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
-
 # if user goes here, run this function in views
 # user visits site homepage, calls index function in views
 
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
-
+from carbon_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('carbon_app.urls')),  # Replace 'carbon_app' with your actual app name
+
+    # Django login/logout system
+    path('accounts/', include('django.contrib.auth.urls')),
+
+    # Signup page
+    path('accounts/signup/', views.signup_view, name='signup'),
+
+    # Carbon app pages
+    path('', include('carbon_app.urls')),
 ]
-
-
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
-
-
-
-

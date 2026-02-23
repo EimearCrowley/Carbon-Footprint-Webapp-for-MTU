@@ -109,8 +109,25 @@
 </head>
 <body>
   <div class="container">
-    <h1>Carbon Travel Calculator</h1>
-    <h2>How are you travelling today?</h2>
+
+<div style="position:absolute; top:20px; right:30px;">
+
+{% if user.is_authenticated %}
+
+<span>Welcome {{ user.username }}</span>
+<a href="{% url 'logout' %}">Logout</a>
+
+{% else %}
+
+<a href="{% url 'login' %}" style="margin-right:15px;">Login</a>
+<a href="/accounts/signup/">Sign up</a>
+
+{% endif %}
+
+</div>
+
+<h1>Carbon Travel Calculator</h1>
+<h2>How are you travelling today?</h2>
 
     <form method="post">
       {% csrf_token %}
