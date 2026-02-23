@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
-from .forms import TransportDetailsForm, ModeSelectionForm
+from .forms import TransportDetailsForm, ModeSelectionForm, RouteDaysForm
 from .google_maps import get_distance_km
-from .forms import RouteDaysForm 
 import re
 
 
@@ -10,22 +9,25 @@ def mode_selection_view(request):
         form = ModeSelectionForm(request.POST)
         if form.is_valid():
             mode = form.cleaned_data['mode_1']
+
             request.session['mode_1'] = mode
             request.session['duo_mode'] = form.cleaned_data['duo_mode']
             request.session['mode_2'] = form.cleaned_data.get('mode_2')
 
             if mode == 'car':
-                return redirect('transport_details')  # Go to fuel type screen
+                return redirect('transport_details')
             else:
-                return redirect('route_days')  # Skip fuel screen
+                return redirect('route_days')
     else:
         form = ModeSelectionForm()
+
     return render(request, "mode_selection.html", {"form": form})
 
 
 def transport_details_view(request):
+
     if request.session.get('mode_1') != 'car':
-        return redirect('route_days')  # Prevent access if not car
+        return redirect('route_days')
 
     if request.method == "POST":
         form = TransportDetailsForm(request.POST)
@@ -58,12 +60,11 @@ def transport_details_view(request):
 
 def is_eircode(value):
     cleaned_origin = value.replace(" ", "").upper()
-
     pattern = r'^[A-Z]\d{2}[A-Z0-9]{4}$'
 
     if re.match(pattern, cleaned_origin):
         return cleaned_origin[:3] + " " + cleaned_origin[3:]
-    
+
     return None
 
 
@@ -91,7 +92,6 @@ def route_days_view(request):
             request.session['destination'] = destination
             request.session['days'] = days
 
-            # SAVE SECOND LEG IF DUO MODE
             if duo_mode:
                 request.session['secondary_origin'] = secondary_origin
 
@@ -107,44 +107,65 @@ def route_days_view(request):
 
 
 def results_view(request):
+
     fuel_type = request.session.get('fuel_type')
     engine_option = request.session.get('engine_option')
     origin = request.session.get('origin')
     destination = request.session.get('destination')
-    days_raw = request.session.get('days')
-    days = int(days_raw) if days_raw is not None else 0
+    days = int(request.session.get('days', 0))
 
     distance_km = get_distance_km(origin, destination)
 
+    # Save distance for summary page
+    request.session['distance_km'] = distance_km
+
     emission_factors = {
         'petrol': {
-            '1.0L': 0.116,
-            '1.2L': 0.127,
-            '1.4L': 0.136,
-            '1.6L': 0.15,
-            '2.0L+': 0.215,
+            '1.0L': 0.12,
+            '1.2L': 0.14,
+            '1.4L': 0.16,
+            '1.6L': 0.18,
+            '2.0L+': 0.22,
         },
         'diesel': {
-            '1.0L': 0.097,
-            '1.2L': 0.108,
-            '1.4L': 0.115,
-            '1.6L': 0.131,
-            '2.0L+': 0.164,
+            '1.0L': 0.11,
+            '1.2L': 0.13,
+            '1.4L': 0.15,
+            '1.6L': 0.17,
+            '2.0L+': 0.20,
         },
         'electric': {
-            'Hybrid': 0.072,
-            'Fully Electric': 0.06,
+            'Hybrid': 0.05,
+            'Fully Electric': 0.02,
         }
     }
 
+    weekly_emissions = None
+
     try:
         factor = emission_factors[fuel_type][engine_option]
-        weekly_emissions = distance_km * 2 * days * factor  # round trip
+        weekly_emissions = round(distance_km * 2 * days * factor, 2)
     except Exception:
         weekly_emissions = None
 
-    request.session['distance_km'] = distance_km
+    # Save emissions to session for summary page
     request.session['weekly_emissions'] = weekly_emissions
+
+    # National comparison
+    national_weekly = 32.7
+
+    difference = None
+    comparison = None
+
+    if weekly_emissions is not None:
+        difference = round(weekly_emissions - national_weekly, 2)
+
+        if difference > 0:
+            comparison = "above"
+        elif difference < 0:
+            comparison = "below"
+        else:
+            comparison = "equal"
 
     return render(request, 'results.html', {
         'origin': origin,
@@ -154,20 +175,53 @@ def results_view(request):
         'weekly_emissions': weekly_emissions,
         'fuel_type': fuel_type,
         'engine_option': engine_option,
+        'national_weekly': national_weekly,
+        'difference': difference,
+        'comparison': comparison,
     })
 
 
 def summary_view(request):
+
+    weekly_emissions = request.session.get('weekly_emissions')
+
+    national_average = 32.7
+
+    difference = None
+    comparison = ""
+    status = "yellow"
+
+    if weekly_emissions is not None:
+
+        difference = round(weekly_emissions - national_average, 2)
+
+        if weekly_emissions < national_average * 0.7:
+            status = "green"
+            comparison = "well below"
+
+        elif weekly_emissions <= national_average:
+            status = "yellow"
+            comparison = "around"
+
+        else:
+            status = "red"
+            comparison = "above"
+
     context = {
         'mode_1': request.session.get('mode_1'),
-        'duo_mode': request.session.get('duo_mode'),
         'mode_2': request.session.get('mode_2'),
+        'duo_mode': request.session.get('duo_mode'),
         'fuel_type': request.session.get('fuel_type'),
         'engine_option': request.session.get('engine_option'),
         'origin': request.session.get('origin'),
         'destination': request.session.get('destination'),
         'days': request.session.get('days'),
         'distance_km': request.session.get('distance_km'),
-        'weekly_emissions': request.session.get('weekly_emissions'),
+        'weekly_emissions': weekly_emissions,
+        'national_average': national_average,
+        'difference': abs(difference) if difference else 0,
+        'comparison': comparison,
+        'status': status
     }
+
     return render(request, 'summary.html', context)

@@ -1,109 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Carbon Travel Calculator</title>
-  {% load static %}
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f7f9;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
+<meta charset="UTF-8">
+<title>Carbon Travel Calculator</title>
+{% load static %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    .container {
-      width: 100%;
-      max-width: 700px;
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
+<style>
 
-    h1 {
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
+body{
+  font-family:'Segoe UI',sans-serif;
+  background:#f4f7f9;
+  margin:0;
+  padding:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
 
-    h2 {
-      color: #27ae60;
-      margin-bottom: 30px;
-    }
+.container{
+  width:100%;
+  max-width:700px;
+  background:white;
+  padding:40px;
+  border-radius:16px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.1);
+  text-align:center;
+}
 
-    .summary {
-      text-align: left;
-      margin: 0 auto 30px;
-      max-width: 500px;
-    }
+h1{color:#2c3e50;}
+h2{color:#27ae60;}
 
-    .summary p {
-      font-size: 16px;
-      margin: 10px 0;
-      color: #34495e;
-    }
+.summary{
+  text-align:left;
+  margin:30px auto;
+  max-width:500px;
+}
 
-    .highlight {
-      font-weight: bold;
-      color: #27ae60;
-    }
+.summary p{
+  margin:8px 0;
+  font-size:16px;
+  color:#34495e;
+}
 
-    .btn {
-      width: 100%;
-      padding: 14px;
-      background-color: #27ae60;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 20px;
-    }
+.highlight{
+  font-weight:bold;
+  color:#27ae60;
+}
 
-    .btn:hover {
-      background-color: #219150;
-    }
+/* comparison bar */
 
-    .back-link {
-      display: inline-block;
-      margin-top: 15px;
-      color: #3498db;
-      text-decoration: none;
-      font-size: 14px;
-    }
+.bar-container{
+  width:100%;
+  height:28px;
+  background:#ecf0f1;
+  border-radius:30px;
+  margin:25px 0;
+  overflow:hidden;
+  position:relative;
+}
 
-    .back-link:hover {
-      text-decoration: underline;
-    }
-  </style>
+.bar-fill{
+  height:100%;
+  border-radius:30px;
+  transition:width 1s ease;
+}
+
+/* colour gradients */
+
+.green{
+  background:linear-gradient(90deg,#2ecc71,#27ae60);
+}
+
+.yellow{
+  background:linear-gradient(90deg,#f1c40f,#f39c12);
+}
+
+.red{
+  background:linear-gradient(90deg,#ff7675,#e74c3c);
+}
+
+/* national average marker */
+
+.average-line{
+  position:absolute;
+  left:50%;
+  top:0;
+  height:100%;
+  width:3px;
+  background:#34495e;
+  opacity:0.6;
+}
+
+.smiley{
+  width:70px;
+  margin-top:15px;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  background:#27ae60;
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:18px;
+  cursor:pointer;
+  font-weight:bold;
+  margin-top:25px;
+}
+
+.btn:hover{
+  background:#219150;
+}
+
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>Carbon Travel Calculator</h1>
-    <h2>Your Weekly Emissions</h2>
 
-    <div class="summary">
-      <p><strong>From:</strong> {{ origin }}</p>
-      <p><strong>To:</strong> {{ destination }}</p>
-      <p><strong>Days per week:</strong> {{ days }}</p>
-      <p><strong>Distance (round trip):</strong> <span class="highlight">{{ distance_km|floatformat:1 }} km</span></p>
-      <p><strong>Fuel type:</strong> {{ fuel_type|title }}</p>
-      <p><strong>Engine:</strong> {{ engine_option }}</p>
-      <p><strong>Estimated weekly CO₂ emissions:</strong> <span class="highlight">{{ weekly_emissions|floatformat:2 }} kg</span></p>
-    </div>
+<div class="container">
 
-    <form action="{% url 'summary' %}" method="get">
-      <button type="submit" class="btn">View Summary</button>
-    </form>
+<h1>Carbon Travel Calculator</h1>
+<h2>Your Weekly Emissions</h2>
 
-    <a href="{% url 'route_days' %}" class="back-link">← Go back and edit details</a>
-  </div>
+<div class="summary">
+
+<p><strong>From:</strong> {{ origin }}</p>
+<p><strong>To:</strong> {{ destination }}</p>
+<p><strong>Days per week:</strong> {{ days }}</p>
+
+<p>
+<strong>Distance (round trip):</strong>
+<span class="highlight">{{ distance_km|floatformat:1 }} km</span>
+</p>
+
+{% if fuel_type %}
+<p><strong>Fuel type:</strong> {{ fuel_type|title }}</p>
+<p><strong>Engine:</strong> {{ engine_option }}</p>
+{% endif %}
+
+<p>
+<strong>Estimated weekly CO₂ emissions:</strong>
+<span class="highlight">{{ weekly_emissions|floatformat:2 }} kg</span>
+</p>
+
+</div>
+
+{% if weekly_emissions %}
+
+<h3>Your weekly CO₂ emissions: {{ weekly_emissions|floatformat:2 }} kg</h3>
+
+<p>
+The average person in Ireland produces about
+<strong>{{ national_weekly }} kg</strong>
+of CO₂ per week from transport.
+</p>
+
+<p>
+Your emissions are
+<strong>{{ difference|floatformat:2 }} kg {{ comparison }}</strong>
+the national average.
+</p>
+
+
+<!-- VISUAL BAR -->
+
+<div class="bar-container">
+
+<div class="average-line"></div>
+
+{% widthratio weekly_emissions national_weekly 100 as emission_percent %}
+
+{% if weekly_emissions <= national_weekly %}
+<div class="bar-fill green" style="width: {{ emission_percent }}%"></div>
+
+{% elif weekly_emissions <= national_weekly|add:15 %}
+<div class="bar-fill yellow" style="width: {{ emission_percent }}%"></div>
+
+{% else %}
+<div class="bar-fill red" style="width: {{ emission_percent }}%"></div>
+
+{% endif %}
+
+</div>
+
+
+<!-- SMILEY FACE -->
+
+{% if weekly_emissions <= national_weekly %}
+<img src="{% static 'carbon_app/images/green_smile.png' %}" class="smiley">
+
+{% elif weekly_emissions <= national_weekly|add:15 %}
+<img src="{% static 'carbon_app/images/yellow_smile.png' %}" class="smiley">
+
+{% else %}
+<img src="{% static 'carbon_app/images/red_smile.png' %}" class="smiley">
+
+{% endif %}
+
+{% endif %}
+
+<form action="{% url 'summary' %}" method="get">
+<button type="submit" class="btn">View Full Summary</button>
+</form>
+
+</div>
+
 </body>
 </html>
