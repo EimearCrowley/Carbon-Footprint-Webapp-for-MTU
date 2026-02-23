@@ -68,15 +68,21 @@ def is_eircode(value):
 
 
 def route_days_view(request):
+
+    duo_mode = request.session.get('duo_mode')
+
     if request.method == "POST":
         form = RouteDaysForm(request.POST)
+
         if form.is_valid():
             origin = form.cleaned_data['origin']
+            secondary_origin = form.cleaned_data.get('secondary_origin')
             destination = form.cleaned_data['destination']
             days = form.cleaned_data['days_per_week']
 
             formatted_origin = is_eircode(origin)
-            if formatted_origin:    # if formatted_origin is not None
+
+            if formatted_origin:
                 origin = formatted_origin
             else:
                 origin = origin.title()
@@ -85,11 +91,19 @@ def route_days_view(request):
             request.session['destination'] = destination
             request.session['days'] = days
 
+            # SAVE SECOND LEG IF DUO MODE
+            if duo_mode:
+                request.session['secondary_origin'] = secondary_origin
+
             return redirect('results')
+
     else:
         form = RouteDaysForm()
 
-    return render(request, "route_days.html", {"form": form})
+    return render(request, "route_days.html", {
+        "form": form,
+        "duo_mode": duo_mode
+    })
 
 
 def results_view(request):
