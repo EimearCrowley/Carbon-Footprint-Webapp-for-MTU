@@ -118,22 +118,22 @@ def results_view(request):
 
     emission_factors = {
         'petrol': {
-            '1.0L': 0.12,
-            '1.2L': 0.14,
-            '1.4L': 0.16,
-            '1.6L': 0.18,
-            '2.0L+': 0.22,
+            '1.0L': 0.116,
+            '1.2L': 0.127,
+            '1.4L': 0.136,
+            '1.6L': 0.15,
+            '2.0L+': 0.215,
         },
         'diesel': {
-            '1.0L': 0.11,
-            '1.2L': 0.13,
-            '1.4L': 0.15,
-            '1.6L': 0.17,
-            '2.0L+': 0.20,
+            '1.0L': 0.097,
+            '1.2L': 0.108,
+            '1.4L': 0.115,
+            '1.6L': 0.131,
+            '2.0L+': 0.164,
         },
         'electric': {
-            'Hybrid': 0.05,
-            'Fully Electric': 0.02,
+            'Hybrid': 0.072,
+            'Fully Electric': 0.06,
         }
     }
 
@@ -171,4 +171,3 @@ def summary_view(request):
         'weekly_emissions': request.session.get('weekly_emissions'),
     }
     return render(request, 'summary.html', context)
-
