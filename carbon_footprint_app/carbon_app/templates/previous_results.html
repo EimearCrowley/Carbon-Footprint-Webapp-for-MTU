@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Previous Results</title>
+</head>
+
+<body>
+
+<h1>Your Previous Emissions</h1>
+
+{% if results %}
+
+<ul>
+{% for r in results %}
+
+<li>
+Distance: {{ r.distance }} km —
+CO2: {{ r.emissions }} kg
+</li>
+
+{% endfor %}
+</ul>
+
+{% else %}
+
+<p>No results yet.</p>
+
+{% endif %}
+
+<a href="{% url 'dashboard' %}">Back to Dashboard</a>
+
+</body>
+</html>

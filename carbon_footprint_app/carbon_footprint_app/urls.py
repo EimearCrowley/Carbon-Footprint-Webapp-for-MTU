@@ -19,17 +19,14 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from carbon_app import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # Django login/logout system
+    path('', include('carbon_app.urls')),
+
     path('accounts/', include('django.contrib.auth.urls')),
 
-    # Signup page
-    path('accounts/signup/', views.signup_view, name='signup'),
-
-    # Carbon app pages
-    path('', include('carbon_app.urls')),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
 ]

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
   <title>Carbon Travel Calculator</title>
   {% load static %}
@@ -115,7 +116,12 @@
 {% if user.is_authenticated %}
 
 <span>Welcome {{ user.username }}</span>
-<a href="{% url 'logout' %}">Logout</a>
+<a href="{% url 'dashboard' %}" style="margin-left:10px;">Go to Dashboard</a>
+
+<form action="{% url 'logout' %}" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" style="margin-left:10px;">Logout</button>
+</form>
 
 {% else %}
 
