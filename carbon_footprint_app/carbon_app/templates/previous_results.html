@@ -1,89 +1,218 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Previous Results</title>
+<title>Your Carbon History</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 body{
-font-family:'Segoe UI',sans-serif;
-background:#f4f7f9;
-margin:0;
-padding:0;
+    font-family:'Segoe UI', sans-serif;
+    background-color:#f4f7f9;
+    margin:0;
+    padding:0;
 }
 
 .container{
-max-width:800px;
-margin:80px auto;
-background:white;
-padding:40px;
-border-radius:16px;
-box-shadow:0 4px 20px rgba(0,0,0,0.1);
+    width:100%;
+    max-width:1000px;
+    margin:80px auto;
+    background:white;
+    padding:40px;
+    border-radius:16px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.1);
 }
 
 h1{
-text-align:center;
-color:#2c3e50;
-margin-bottom:30px;
+    text-align:center;
+    color:#2c3e50;
+    margin-bottom:40px;
 }
 
-.result{
-padding:20px;
-border-radius:10px;
-background:#ecf0f1;
-margin-bottom:15px;
+.result-card{
+    background:#ecf0f1;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
 }
 
-.back{
-display:block;
-text-align:center;
-margin-top:30px;
-padding:12px;
-background:#27ae60;
-color:white;
-text-decoration:none;
-border-radius:10px;
-font-weight:bold;
+.result-card p{
+    margin:6px 0;
 }
 
-.back:hover{
-background:#219150;
+.date{
+    color:#7f8c8d;
+    font-size:13px;
+}
+
+.delete-btn{
+    display:inline-block;
+    margin-top:10px;
+    padding:8px 14px;
+    background:#e74c3c;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
+    font-size:14px;
+}
+
+.delete-btn:hover{
+    background:#c0392b;
+}
+
+.back-btn{
+    display:block;
+    text-align:center;
+    margin-top:30px;
+    padding:14px;
+    background:#27ae60;
+    color:white;
+    text-decoration:none;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.back-btn:hover{
+    background:#219150;
+}
+
+.chart-container{
+    margin-top:40px;
+}
+
+.tips{
+    background:#fdf2e9;
+    padding:20px;
+    border-radius:10px;
+    margin-top:30px;
+}
+
+.tips h3{
+    margin-top:0;
 }
 
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>Your Previous Emissions</h1>
+<h1>Your Carbon Journey History</h1>
 
 {% if results %}
 
+<!-- RESULTS LIST -->
+
 {% for r in results %}
 
-<div class="result">
+<div class="result-card">
 
-<strong>{{ r.origin }} → {{ r.destination }}</strong><br><br>
+<p><strong>Route:</strong> {{ r.origin }} → {{ r.destination }}</p>
 
-Distance: {{ r.distance_km }} km<br>
-Weekly CO₂: {{ r.weekly_emissions }} kg
+<p><strong>Transport:</strong> {{ r.transport_mode }}</p>
+
+<p><strong>Distance:</strong> {{ r.distance_km }} km</p>
+
+<p><strong>Weekly CO₂:</strong> {{ r.weekly_emissions }} kg</p>
+
+<p class="date">
+{{ r.created_at|date:"d M Y H:i" }}
+</p>
+
+<a href="{% url 'delete_result' r.id %}" class="delete-btn">
+Delete
+</a>
 
 </div>
 
 {% endfor %}
 
-{% else %}
 
-<p>No results saved yet.</p>
+<!-- CHART -->
+
+<div class="chart-container">
+
+<h2 style="text-align:center;">Your Emissions Trend</h2>
+
+<canvas id="carbonChart"></canvas>
+
+</div>
+
+
+<!-- SMART TIPS -->
+
+{% if average_emissions > 32.7 %}
+
+<div class="tips">
+
+<h3>Ways to Reduce Your Carbon Footprint 🌱</h3>
+
+<ul>
+<li>Try public transport where possible</li>
+<li>Consider carpooling</li>
+<li>Walk or cycle short journeys</li>
+<li>Combine trips to reduce travel frequency</li>
+
+</ul>
+
+</div>
 
 {% endif %}
 
-<a href="{% url 'dashboard' %}" class="back">Back to Dashboard</a>
+{% else %}
+
+<p style="text-align:center;">No journeys recorded yet.</p>
+
+{% endif %}
+
+
+<a href="{% url 'dashboard' %}" class="back-btn">
+Back to Dashboard
+</a>
 
 </div>
+
+
+<script>
+
+const labels = [
+{% for r in results %}
+"{{ r.created_at|date:'d M' }}",
+{% endfor %}
+];
+
+const data = [
+{% for r in results %}
+{{ r.weekly_emissions }},
+{% endfor %}
+];
+
+const ctx = document.getElementById('carbonChart').getContext('2d');
+
+new Chart(ctx, {
+type: 'line',
+data: {
+labels: labels,
+datasets: [{
+label: 'Weekly CO₂ (kg)',
+data: data,
+borderColor: '#27ae60',
+backgroundColor: 'rgba(39,174,96,0.2)',
+fill: true,
+tension: 0.3
+}]
+},
+options: {
+responsive: true,
+plugins:{
+legend:{display:true}
+}
+}
+});
+
+</script>
 
 </body>
 </html>

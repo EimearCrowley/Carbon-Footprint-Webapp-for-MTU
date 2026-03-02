@@ -163,6 +163,12 @@ Your emissions are
 <strong>{{ difference|floatformat:2 }} kg {{ comparison }}</strong>
 the national average.
 </p>
+{% if weekly_emissions > 40 %}
+<div style="background:#fdecea;padding:15px;border-radius:10px;margin-top:20px;">
+<strong>Tip:</strong> Your emissions are higher than average.  
+Consider using public transport or carpooling to reduce your footprint.
+</div>
+{% endif %}
 
 
 <!-- VISUAL BAR -->

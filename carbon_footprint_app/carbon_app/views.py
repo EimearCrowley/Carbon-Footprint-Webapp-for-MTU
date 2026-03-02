@@ -6,7 +6,8 @@ from .forms import TransportDetailsForm, ModeSelectionForm, RouteDaysForm
 from .google_maps import get_distance_km
 from .models import EmissionRecord
 import re
-
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 
 # -----------------------------
 # MODE SELECTION
@@ -313,11 +314,26 @@ def dashboard_view(request):
 # -----------------------------
 # PREVIOUS RESULTS
 # -----------------------------
+from .models import EmissionRecord
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def previous_results(request):
 
-    results = EmissionRecord.objects.filter(user=request.user).order_by('-id')
+    results = EmissionRecord.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
 
     return render(request, 'previous_results.html', {
         'results': results
     })
+from django.shortcuts import get_object_or_404
+
+
+@login_required
+def delete_result(request, result_id):
+
+    result = get_object_or_404(EmissionRecord, id=result_id, user=request.user)
+    result.delete()
+
+    return redirect('previous_results')

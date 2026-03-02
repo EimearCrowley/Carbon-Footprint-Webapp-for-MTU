@@ -10,6 +10,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('', views.mode_selection_view, name='home'),
     path('previous-results/', views.previous_results, name='previous_results'),
+    path('delete-result/<int:result_id>/', views.delete_result, name='delete_result'),
 
     # signup page
     path('accounts/signup/', views.signup_view, name='signup'),
