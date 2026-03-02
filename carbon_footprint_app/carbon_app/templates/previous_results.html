@@ -2,32 +2,88 @@
 <html>
 <head>
 <title>Previous Results</title>
+
+<style>
+
+body{
+font-family:'Segoe UI',sans-serif;
+background:#f4f7f9;
+margin:0;
+padding:0;
+}
+
+.container{
+max-width:800px;
+margin:80px auto;
+background:white;
+padding:40px;
+border-radius:16px;
+box-shadow:0 4px 20px rgba(0,0,0,0.1);
+}
+
+h1{
+text-align:center;
+color:#2c3e50;
+margin-bottom:30px;
+}
+
+.result{
+padding:20px;
+border-radius:10px;
+background:#ecf0f1;
+margin-bottom:15px;
+}
+
+.back{
+display:block;
+text-align:center;
+margin-top:30px;
+padding:12px;
+background:#27ae60;
+color:white;
+text-decoration:none;
+border-radius:10px;
+font-weight:bold;
+}
+
+.back:hover{
+background:#219150;
+}
+
+</style>
+
 </head>
 
 <body>
+
+<div class="container">
 
 <h1>Your Previous Emissions</h1>
 
 {% if results %}
 
-<ul>
 {% for r in results %}
 
-<li>
-Distance: {{ r.distance }} km —
-CO2: {{ r.emissions }} kg
-</li>
+<div class="result">
+
+<strong>{{ r.origin }} → {{ r.destination }}</strong><br><br>
+
+Distance: {{ r.distance_km }} km<br>
+Weekly CO₂: {{ r.weekly_emissions }} kg
+
+</div>
 
 {% endfor %}
-</ul>
 
 {% else %}
 
-<p>No results yet.</p>
+<p>No results saved yet.</p>
 
 {% endif %}
 
-<a href="{% url 'dashboard' %}">Back to Dashboard</a>
+<a href="{% url 'dashboard' %}" class="back">Back to Dashboard</a>
+
+</div>
 
 </body>
 </html>
