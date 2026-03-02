@@ -314,18 +314,20 @@ def dashboard_view(request):
 # -----------------------------
 # PREVIOUS RESULTS
 # -----------------------------
-from .models import EmissionRecord
-from django.contrib.auth.decorators import login_required
-
 @login_required
 def previous_results(request):
 
-    results = EmissionRecord.objects.filter(
-        user=request.user
-    ).order_by('-created_at')
+    results = EmissionRecord.objects.filter(user=request.user).order_by('-created_at')
+
+    if results:
+        total = sum(r.weekly_emissions for r in results)
+        average = round(total / len(results), 2)
+    else:
+        average = 0
 
     return render(request, 'previous_results.html', {
-        'results': results
+        'results': results,
+        'average_emissions': average
     })
 from django.shortcuts import get_object_or_404
 
