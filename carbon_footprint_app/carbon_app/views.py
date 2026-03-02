@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
@@ -6,8 +6,7 @@ from .forms import TransportDetailsForm, ModeSelectionForm, RouteDaysForm
 from .google_maps import get_distance_km
 from .models import EmissionRecord
 import re
-from django.db.models import Avg
-from django.shortcuts import get_object_or_404
+
 
 # -----------------------------
 # MODE SELECTION
@@ -19,16 +18,14 @@ def mode_selection_view(request):
 
         if form.is_valid():
 
-            mode = form.cleaned_data['mode_1']
+            request.session["mode_1"] = form.cleaned_data["mode_1"]
+            request.session["duo_mode"] = form.cleaned_data["duo_mode"]
+            request.session["mode_2"] = form.cleaned_data.get("mode_2")
 
-            request.session['mode_1'] = mode
-            request.session['duo_mode'] = form.cleaned_data['duo_mode']
-            request.session['mode_2'] = form.cleaned_data.get('mode_2')
-
-            if mode == "car":
-                return redirect('transport_details')
+            if form.cleaned_data["mode_1"] == "car":
+                return redirect("transport_details")
             else:
-                return redirect('route_days')
+                return redirect("route_days")
 
     else:
         form = ModeSelectionForm()
@@ -41,8 +38,8 @@ def mode_selection_view(request):
 # -----------------------------
 def transport_details_view(request):
 
-    if request.session.get('mode_1') != 'car':
-        return redirect('route_days')
+    if request.session.get("mode_1") != "car":
+        return redirect("route_days")
 
     if request.method == "POST":
 
@@ -50,31 +47,31 @@ def transport_details_view(request):
 
         if form.is_valid():
 
-            request.session['fuel_type'] = form.cleaned_data['fuel_type']
-            request.session['engine_option'] = form.cleaned_data['engine_option']
+            request.session["fuel_type"] = form.cleaned_data["fuel_type"]
+            request.session["engine_option"] = form.cleaned_data["engine_option"]
 
-            return redirect('route_days')
+            return redirect("route_days")
 
     else:
         form = TransportDetailsForm()
 
     petrol_diesel_engines = [
-        ('1.0L', '1.0L'),
-        ('1.2L', '1.2L'),
-        ('1.4L', '1.4L'),
-        ('1.6L', '1.6L'),
-        ('2.0L+', '2.0L+'),
+        ("1.0L","1.0L"),
+        ("1.2L","1.2L"),
+        ("1.4L","1.4L"),
+        ("1.6L","1.6L"),
+        ("2.0L+","2.0L+"),
     ]
 
     electric_engines = [
-        ('Hybrid', 'Hybrid'),
-        ('Fully Electric', 'Fully Electric'),
+        ("Hybrid","Hybrid"),
+        ("Fully Electric","Fully Electric"),
     ]
 
-    return render(request, "transport_details.html", {
-        "form": form,
-        "petrol_diesel_engines": petrol_diesel_engines,
-        "electric_engines": electric_engines
+    return render(request,"transport_details.html",{
+        "form":form,
+        "petrol_diesel_engines":petrol_diesel_engines,
+        "electric_engines":electric_engines
     })
 
 
@@ -83,9 +80,9 @@ def transport_details_view(request):
 # -----------------------------
 def is_eircode(value):
 
-    cleaned = value.replace(" ", "").upper()
+    cleaned = value.replace(" ","").upper()
 
-    pattern = r'^[A-Z]\d{2}[A-Z0-9]{4}$'
+    pattern = r"^[A-Z]\d{2}[A-Z0-9]{4}$"
 
     if re.match(pattern, cleaned):
         return cleaned[:3] + " " + cleaned[3:]
@@ -98,7 +95,7 @@ def is_eircode(value):
 # -----------------------------
 def route_days_view(request):
 
-    duo_mode = request.session.get('duo_mode')
+    duo_mode = request.session.get("duo_mode")
 
     if request.method == "POST":
 
@@ -106,9 +103,9 @@ def route_days_view(request):
 
         if form.is_valid():
 
-            origin = form.cleaned_data['origin']
-            destination = form.cleaned_data['destination']
-            days = form.cleaned_data['days_per_week']
+            origin = form.cleaned_data["origin"]
+            destination = form.cleaned_data["destination"]
+            days = form.cleaned_data["days_per_week"]
 
             formatted_origin = is_eircode(origin)
 
@@ -117,18 +114,18 @@ def route_days_view(request):
             else:
                 origin = origin.title()
 
-            request.session['origin'] = origin
-            request.session['destination'] = destination
-            request.session['days'] = days
+            request.session["origin"] = origin
+            request.session["destination"] = destination
+            request.session["days"] = days
 
-            return redirect('results')
+            return redirect("results")
 
     else:
         form = RouteDaysForm()
 
-    return render(request, "route_days.html", {
-        "form": form,
-        "duo_mode": duo_mode
+    return render(request,"route_days.html",{
+        "form":form,
+        "duo_mode":duo_mode
     })
 
 
@@ -148,9 +145,10 @@ def results_view(request):
 
     request.session['distance_km'] = distance_km
 
+    # EMISSION FACTORS
     emission_factors = {
 
-        'petrol': {
+        "car_petrol": {
             '1.0L': 0.12,
             '1.2L': 0.14,
             '1.4L': 0.16,
@@ -158,7 +156,7 @@ def results_view(request):
             '2.0L+': 0.22,
         },
 
-        'diesel': {
+        "car_diesel": {
             '1.0L': 0.11,
             '1.2L': 0.13,
             '1.4L': 0.15,
@@ -166,11 +164,16 @@ def results_view(request):
             '2.0L+': 0.20,
         },
 
-        'electric': {
+        "car_electric": {
             'Hybrid': 0.05,
             'Fully Electric': 0.02,
-        }
+        },
 
+        "bus": 0.05,
+        "train": 0.04,
+        "bike": 0.0,
+        "walk": 0.0,
+        "scooter": 0.02
     }
 
     weekly_emissions = None
@@ -178,21 +181,29 @@ def results_view(request):
     try:
 
         if mode == "car":
-            factor = emission_factors[fuel_type][engine_option]
+
+            if fuel_type == "petrol":
+                factor = emission_factors["car_petrol"][engine_option]
+
+            elif fuel_type == "diesel":
+                factor = emission_factors["car_diesel"][engine_option]
+
+            else:
+                factor = emission_factors["car_electric"][engine_option]
+
         else:
-            factor = 0.08
+            factor = emission_factors.get(mode, 0.05)
 
         weekly_emissions = round(distance_km * 2 * days * factor, 2)
 
     except Exception:
         weekly_emissions = None
 
+    # SAVE TO SESSION
     request.session['weekly_emissions'] = weekly_emissions
 
-
-    # SAVE RESULT
+    # SAVE TO DATABASE
     if request.user.is_authenticated and weekly_emissions:
-
         EmissionRecord.objects.create(
             user=request.user,
             origin=origin,
@@ -200,7 +211,6 @@ def results_view(request):
             distance_km=distance_km,
             weekly_emissions=weekly_emissions
         )
-
 
     national_weekly = 32.7
 
@@ -218,9 +228,9 @@ def results_view(request):
         else:
             comparison = "equal"
 
-
     return render(request, 'results.html', {
 
+        'mode': mode,
         'origin': origin,
         'destination': destination,
         'days': days,
@@ -234,23 +244,129 @@ def results_view(request):
 
     })
 
+    # -----------------------------
+    # EMISSION FACTORS
+    # -----------------------------
+
+    emission_factors = {
+
+        "car_petrol":{
+            "1.0L":0.12,
+            "1.2L":0.14,
+            "1.4L":0.16,
+            "1.6L":0.18,
+            "2.0L+":0.22
+        },
+
+        "car_diesel":{
+            "1.0L":0.11,
+            "1.2L":0.13,
+            "1.4L":0.15,
+            "1.6L":0.17,
+            "2.0L+":0.20
+        },
+
+        "car_electric":{
+            "Hybrid":0.05,
+            "Fully Electric":0.02
+        },
+
+        "bus":0.05,
+        "train":0.04,
+        "bike":0.0,
+        "walk":0.0,
+        "scooter":0.02
+    }
+
+    weekly_emissions = None
+
+    try:
+
+        if mode == "car":
+
+            if fuel_type == "petrol":
+                factor = emission_factors["car_petrol"][engine_option]
+
+            elif fuel_type == "diesel":
+                factor = emission_factors["car_diesel"][engine_option]
+
+            else:
+                factor = emission_factors["car_electric"][engine_option]
+
+        else:
+            factor = emission_factors.get(mode,0.05)
+
+        weekly_emissions = round(distance_km * 2 * days * factor,2)
+
+    except:
+        weekly_emissions = None
+
+
+    request.session["weekly_emissions"] = weekly_emissions
+
+
+    # SAVE RECORD
+    if request.user.is_authenticated and weekly_emissions:
+
+        EmissionRecord.objects.create(
+            user=request.user,
+            origin=origin,
+            destination=destination,
+            distance_km=distance_km,
+            weekly_emissions=weekly_emissions
+        )
+
+
+    national_weekly = 32.7
+
+    difference = None
+    comparison = None
+
+    if weekly_emissions:
+
+        difference = round(weekly_emissions - national_weekly,2)
+
+        if difference > 0:
+            comparison = "above"
+        elif difference < 0:
+            comparison = "below"
+        else:
+            comparison = "equal"
+
+
+    return render(request,"results.html",{
+
+        "mode":mode,
+        "origin":origin,
+        "destination":destination,
+        "days":days,
+        "distance_km":distance_km,
+        "weekly_emissions":weekly_emissions,
+        "fuel_type":fuel_type,
+        "engine_option":engine_option,
+        "national_weekly":national_weekly,
+        "difference":difference,
+        "comparison":comparison
+
+    })
+
 
 # -----------------------------
 # SUMMARY PAGE
 # -----------------------------
 def summary_view(request):
 
-    weekly_emissions = request.session.get('weekly_emissions')
+    weekly_emissions = request.session.get("weekly_emissions")
 
     national_average = 32.7
 
-    status = "yellow"
-    comparison = ""
     difference = 0
+    comparison = ""
+    status = "yellow"
 
     if weekly_emissions:
 
-        difference = round(weekly_emissions - national_average, 2)
+        difference = round(weekly_emissions - national_average,2)
 
         if weekly_emissions < national_average * 0.7:
             status = "green"
@@ -264,21 +380,28 @@ def summary_view(request):
             status = "red"
             comparison = "above"
 
+
     context = {
 
-        'origin': request.session.get('origin'),
-        'destination': request.session.get('destination'),
-        'days': request.session.get('days'),
-        'distance_km': request.session.get('distance_km'),
-        'weekly_emissions': weekly_emissions,
-        'national_average': national_average,
-        'difference': abs(difference),
-        'comparison': comparison,
-        'status': status
+        "mode_1": request.session.get("mode_1"),
+        "mode_2": request.session.get("mode_2"),
+        "fuel_type": request.session.get("fuel_type"),
+        "engine_option": request.session.get("engine_option"),
 
-    }
+        "origin": request.session.get("origin"),
+        "destination": request.session.get("destination"),
+        "days": request.session.get("days"),
+        "distance_km": request.session.get("distance_km"),
 
-    return render(request, 'summary.html', context)
+        "weekly_emissions": weekly_emissions,
+
+        "national_average": national_average,
+        "difference": abs(difference),
+        "comparison": comparison,
+        "status": status
+}
+
+    return render(request,"summary.html",context)
 
 
 # -----------------------------
@@ -292,14 +415,14 @@ def signup_view(request):
 
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request,user)
 
-            return redirect('mode_selection')
+            return redirect("mode_selection")
 
     else:
         form = UserCreationForm()
 
-    return render(request, "registration/signup.html", {"form": form})
+    return render(request,"registration/signup.html",{"form":form})
 
 
 # -----------------------------
@@ -308,7 +431,7 @@ def signup_view(request):
 @login_required
 def dashboard_view(request):
 
-    return render(request, "dashboard.html")
+    return render(request,"dashboard.html")
 
 
 # -----------------------------
@@ -317,25 +440,27 @@ def dashboard_view(request):
 @login_required
 def previous_results(request):
 
-    results = EmissionRecord.objects.filter(user=request.user).order_by('-created_at')
+    results = EmissionRecord.objects.filter(user=request.user).order_by("-created_at")
 
     if results:
         total = sum(r.weekly_emissions for r in results)
-        average = round(total / len(results), 2)
+        average = round(total / len(results),2)
     else:
         average = 0
 
-    return render(request, 'previous_results.html', {
-        'results': results,
-        'average_emissions': average
+    return render(request,"previous_results.html",{
+        "results":results,
+        "average_emissions":average
     })
-from django.shortcuts import get_object_or_404
 
 
+# -----------------------------
+# DELETE RESULT
+# -----------------------------
 @login_required
 def delete_result(request, result_id):
 
-    result = get_object_or_404(EmissionRecord, id=result_id, user=request.user)
+    result = get_object_or_404(EmissionRecord,id=result_id,user=request.user)
     result.delete()
 
-    return redirect('previous_results')
+    return redirect("previous_results")

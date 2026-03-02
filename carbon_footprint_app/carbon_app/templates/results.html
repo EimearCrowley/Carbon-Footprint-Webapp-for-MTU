@@ -35,7 +35,7 @@ h2{color:#27ae60;}
 .summary{
   text-align:left;
   margin:30px auto;
-  max-width:500px;
+  max-width:520px;
 }
 
 .summary p{
@@ -49,7 +49,7 @@ h2{color:#27ae60;}
   color:#27ae60;
 }
 
-/* comparison bar */
+/* BAR */
 
 .bar-container{
   width:100%;
@@ -67,8 +67,6 @@ h2{color:#27ae60;}
   transition:width 1s ease;
 }
 
-/* colour gradients */
-
 .green{
   background:linear-gradient(90deg,#2ecc71,#27ae60);
 }
@@ -81,20 +79,18 @@ h2{color:#27ae60;}
   background:linear-gradient(90deg,#ff7675,#e74c3c);
 }
 
-/* national average marker */
-
 .average-line{
   position:absolute;
   left:50%;
   top:0;
   height:100%;
   width:3px;
-  background:#34495e;
+  background:#2c3e50;
   opacity:0.6;
 }
 
 .smiley{
-  width:70px;
+  width:80px;
   margin-top:15px;
 }
 
@@ -132,17 +128,22 @@ h2{color:#27ae60;}
 <p><strong>Days per week:</strong> {{ days }}</p>
 
 <p>
-<strong>Distance (round trip):</strong>
+<strong>Distance (one way):</strong>
 <span class="highlight">{{ distance_km|floatformat:1 }} km</span>
 </p>
 
-{% if fuel_type %}
-<p><strong>Fuel type:</strong> {{ fuel_type|title }}</p>
+<p>
+<strong>Transport mode:</strong>
+{{ mode|title }}
+</p>
+
+{% if mode == "car" %}
+<p><strong>Fuel Type:</strong> {{ fuel_type|title }}</p>
 <p><strong>Engine:</strong> {{ engine_option }}</p>
 {% endif %}
 
 <p>
-<strong>Estimated weekly CO₂ emissions:</strong>
+<strong>Estimated weekly CO₂:</strong>
 <span class="highlight">{{ weekly_emissions|floatformat:2 }} kg</span>
 </p>
 
@@ -150,12 +151,11 @@ h2{color:#27ae60;}
 
 {% if weekly_emissions %}
 
-<h3>Your weekly CO₂ emissions: {{ weekly_emissions|floatformat:2 }} kg</h3>
+<h3>{{ weekly_emissions|floatformat:2 }} kg CO₂ per week</h3>
 
 <p>
-The average person in Ireland produces about
+Average weekly transport emissions in Ireland:
 <strong>{{ national_weekly }} kg</strong>
-of CO₂ per week from transport.
 </p>
 
 <p>
@@ -163,21 +163,12 @@ Your emissions are
 <strong>{{ difference|floatformat:2 }} kg {{ comparison }}</strong>
 the national average.
 </p>
-{% if weekly_emissions > 40 %}
-<div style="background:#fdecea;padding:15px;border-radius:10px;margin-top:20px;">
-<strong>Tip:</strong> Your emissions are higher than average.  
-Consider using public transport or carpooling to reduce your footprint.
-</div>
-{% endif %}
 
-
-<!-- VISUAL BAR -->
+{% widthratio weekly_emissions national_weekly 100 as emission_percent %}
 
 <div class="bar-container">
 
 <div class="average-line"></div>
-
-{% widthratio weekly_emissions national_weekly 100 as emission_percent %}
 
 {% if weekly_emissions <= national_weekly %}
 <div class="bar-fill green" style="width: {{ emission_percent }}%"></div>
@@ -192,8 +183,7 @@ Consider using public transport or carpooling to reduce your footprint.
 
 </div>
 
-
-<!-- SMILEY FACE -->
+<!-- SMILEY -->
 
 {% if weekly_emissions <= national_weekly %}
 <img src="{% static 'carbon_app/images/green_smile.png' %}" class="smiley">

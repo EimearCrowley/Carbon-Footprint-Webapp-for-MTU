@@ -1,157 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Carbon Travel Summary</title>
-  {% load static %}
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f7f9;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
+<meta charset="UTF-8">
+<title>Carbon Travel Summary</title>
+{% load static %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    .container {
-      width: 100%;
-      max-width: 800px;
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
+<style>
 
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
+body{
+font-family:'Segoe UI', sans-serif;
+background:#f4f7f9;
+margin:0;
+padding:0;
+display:flex;
+align-items:center;
+justify-content:center;
+height:100vh;
+}
 
-    h2 {
-      text-align: center;
-      color: #27ae60;
-      margin-bottom: 30px;
-    }
+.container{
+width:100%;
+max-width:800px;
+background:white;
+padding:40px;
+border-radius:16px;
+box-shadow:0 4px 20px rgba(0,0,0,0.1);
+}
 
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
+h1{
+text-align:center;
+color:#2c3e50;
+margin-bottom:10px;
+}
 
-    .summary-item {
-      background-color: #ecf0f1;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-    }
+h2{
+text-align:center;
+color:#27ae60;
+margin-bottom:30px;
+}
 
-    .summary-item h3 {
-      margin: 0 0 10px;
-      color: #2c3e50;
-      font-size: 16px;
-    }
+.summary-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+margin-bottom:30px;
+}
 
-    .summary-item p {
-      margin: 0;
-      font-size: 18px;
-      font-weight: bold;
-      color: #27ae60;
-    }
+.summary-item{
+background:#ecf0f1;
+padding:20px;
+border-radius:12px;
+text-align:center;
+}
 
-    .btn {
-      width: 100%;
-      padding: 14px;
-      background-color: #27ae60;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+.summary-item h3{
+margin:0 0 10px;
+color:#2c3e50;
+font-size:16px;
+}
 
-    .btn:hover {
-      background-color: #219150;
-    }
+.summary-item p{
+margin:0;
+font-size:18px;
+font-weight:bold;
+color:#27ae60;
+}
 
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-    }
+.btn{
+width:100%;
+padding:14px;
+background:#27ae60;
+color:white;
+border:none;
+border-radius:10px;
+font-size:18px;
+cursor:pointer;
+font-weight:bold;
+}
 
-    .footer a {
-      color: #3498db;
-      text-decoration: none;
-      font-size: 14px;
-    }
+.btn:hover{
+background:#219150;
+}
 
-    .footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
+.footer{
+text-align:center;
+margin-top:20px;
+}
+
+.footer a{
+color:#3498db;
+text-decoration:none;
+font-size:14px;
+}
+
+.footer a:hover{
+text-decoration:underline;
+}
+
+</style>
+
 </head>
+
 <body>
-  <div class="container">
-    <h1>Carbon Travel Calculator</h1>
-    <h2>Summary of Your Journey</h2>
 
-    <div class="summary-grid">
-      <div class="summary-item">
-        <h3>Transport Mode</h3>
-        <p>{{ mode_1|title }}</p>
-      </div>
-      {% if mode_2 %}
-      <div class="summary-item">
-        <h3>Second Mode</h3>
-        <p>{{ mode_2|title }}</p>
-      </div>
-      {% endif %}
-      {% if fuel_type %}
-      <div class="summary-item">
-        <h3>Fuel Type</h3>
-        <p>{{ fuel_type|title }}</p>
-      </div>
-      <div class="summary-item">
-        <h3>Engine</h3>
-        <p>{{ engine_option }}</p>
-      </div>
-      {% endif %}
-      <div class="summary-item">
-        <h3>From</h3>
-        <p>{{ origin }}</p>
-      </div>
-      <div class="summary-item">
-        <h3>To</h3>
-        <p>{{ destination }}</p>
-      </div>
-      <div class="summary-item">
-        <h3>Days per Week</h3>
-        <p>{{ days }}</p>
-      </div>
-      <div class="summary-item">
-        <h3>Distance (km)</h3>
-        <p>{{ distance_km|floatformat:1 }}</p>
-      </div>
-      <div class="summary-item">
-        <h3>Weekly CO₂ (kg)</h3>
-        <p>{{ weekly_emissions|floatformat:2 }}</p>
-      </div>
-    </div>
+<div class="container">
 
-    <form action="{% url 'mode_selection' %}" method="get">
-      <button type="submit" class="btn">Start Over</button>
-    </form>
+<h1>Carbon Travel Calculator</h1>
+<h2>Summary of Your Journey</h2>
 
-    <div class="footer">
-      <a href="{% url 'route_days' %}">← Go back to edit journey</a>
-    </div>
-  </div>
+<div class="summary-grid">
+
+<div class="summary-item">
+<h3>Transport Mode</h3>
+<p>{{ mode_1|title }}</p>
+</div>
+
+{% if mode_2 %}
+<div class="summary-item">
+<h3>Second Mode</h3>
+<p>{{ mode_2|title }}</p>
+</div>
+{% endif %}
+
+{% if mode_1 == "car" %}
+
+<div class="summary-item">
+<h3>Fuel Type</h3>
+<p>{{ fuel_type|title }}</p>
+</div>
+
+<div class="summary-item">
+<h3>Engine</h3>
+<p>{{ engine_option }}</p>
+</div>
+
+{% endif %}
+
+<div class="summary-item">
+<h3>From</h3>
+<p>{{ origin }}</p>
+</div>
+
+<div class="summary-item">
+<h3>To</h3>
+<p>{{ destination }}</p>
+</div>
+
+<div class="summary-item">
+<h3>Days per Week</h3>
+<p>{{ days }}</p>
+</div>
+
+<div class="summary-item">
+<h3>Distance (km)</h3>
+<p>{{ distance_km|floatformat:1 }}</p>
+</div>
+
+<div class="summary-item">
+<h3>Weekly CO₂ (kg)</h3>
+<p>{{ weekly_emissions|floatformat:2 }}</p>
+</div>
+
+</div>
+
+<form action="{% url 'mode_selection' %}" method="get">
+<button type="submit" class="btn">Start Over</button>
+</form>
+
+<div class="footer">
+<a href="{% url 'route_days' %}">← Go back to edit journey</a>
+</div>
+
+</div>
+
 </body>
 </html>
