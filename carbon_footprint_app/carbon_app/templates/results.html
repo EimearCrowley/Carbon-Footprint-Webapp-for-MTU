@@ -196,6 +196,24 @@ the national average.
 <img src="{% static 'carbon_app/images/red_smile.png' %}" class="smiley">
 
 {% endif %}
+<!-- SUGGESTIONS -->
+
+{% if weekly_emissions <= national_weekly %}
+<p style="color:#27ae60; font-weight:bold; margin-top:15px;">
+Great job! Your travel emissions are lower than the national average. Keep using sustainable transport!
+</p>
+
+{% elif weekly_emissions <= national_weekly|add:15 %}
+<p style="color:#f39c12; font-weight:bold; margin-top:15px;">
+Your emissions are slightly above average. Consider carpooling, public transport, or cycling a few days per week.
+</p>
+
+{% else %}
+<p style="color:#e74c3c; font-weight:bold; margin-top:15px;">
+Your emissions are much higher than average. Try reducing car journeys, using public transport, or sharing rides to lower your carbon footprint.
+</p>
+
+{% endif %}
 
 {% endif %}
 
