@@ -107,6 +107,32 @@
     <form method="post">
       {% csrf_token %}
       <div class="form-group">
+        <label>How many people are in the car?</label>
+        <div class="radio-group">
+        <label class="radio-option">
+        <input type="radio" name="passengers" value="1" required>
+        🚗 1 (Just me)
+      </label>
+
+    <label class="radio-option">
+<input type="radio" name="passengers" value="2">
+👥 2 people
+</label>
+
+<label class="radio-option">
+<input type="radio" name="passengers" value="3">
+👨‍👩‍👧 3 people
+</label>
+
+<label class="radio-option">
+<input type="radio" name="passengers" value="4">
+👨‍👩‍👧‍👦 4 people
+</label>
+
+</div>
+
+</div>
+      <div class="form-group">
         <label>What fuel does your car use?</label>
         <div class="radio-group" id="fuel-options">
           {% for value, label in form.fuel_type.field.choices %}

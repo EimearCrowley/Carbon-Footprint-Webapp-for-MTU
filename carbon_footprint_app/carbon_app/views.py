@@ -47,10 +47,13 @@ def transport_details_view(request):
 
         if form.is_valid():
 
-            request.session["fuel_type"] = form.cleaned_data["fuel_type"]
-            request.session["engine_option"] = form.cleaned_data["engine_option"]
+            passengers = int(request.POST.get("passengers", 1))
+            request.session['passengers'] = passengers
 
-            return redirect("route_days")
+            request.session['fuel_type'] = form.cleaned_data['fuel_type']
+            request.session['engine_option'] = form.cleaned_data['engine_option']
+
+            return redirect('route_days')
 
     else:
         form = TransportDetailsForm()
@@ -137,6 +140,7 @@ def results_view(request):
     mode = request.session.get('mode_1')
     fuel_type = request.session.get('fuel_type')
     engine_option = request.session.get('engine_option')
+    passengers = int(request.session.get("passengers",1))
     origin = request.session.get('origin')
     destination = request.session.get('destination')
     days = int(request.session.get('days', 0))
@@ -194,7 +198,8 @@ def results_view(request):
         else:
             factor = emission_factors.get(mode, 0.05)
 
-        weekly_emissions = round(distance_km * 2 * days * factor, 2)
+        total_emissions = distance_km * 2 * days * factor
+        weekly_emissions = round(total_emissions / passengers, 2)
 
     except Exception:
         weekly_emissions = None

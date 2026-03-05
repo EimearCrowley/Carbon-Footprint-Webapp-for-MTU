@@ -140,6 +140,7 @@ h2{color:#27ae60;}
 {% if mode == "car" %}
 <p><strong>Fuel Type:</strong> {{ fuel_type|title }}</p>
 <p><strong>Engine:</strong> {{ engine_option }}</p>
+<p><strong>People in the car:</strong> {{ request.session.passengers }}</p>
 {% endif %}
 
 <p>
@@ -149,7 +150,7 @@ h2{color:#27ae60;}
 
 </div>
 
-{% if weekly_emissions %}
+{% if weekly_emissions is not None %}
 
 <h3>{{ weekly_emissions|floatformat:2 }} kg CO₂ per week</h3>
 
@@ -171,13 +172,13 @@ the national average.
 <div class="average-line"></div>
 
 {% if weekly_emissions <= national_weekly %}
-<div class="bar-fill green" style="width: {{ emission_percent }}%"></div>
+<div class="bar-fill green" style="width: {{ emission_percent|floatformat:0 }}%"></div>
 
 {% elif weekly_emissions <= national_weekly|add:15 %}
 <div class="bar-fill yellow" style="width: {{ emission_percent }}%"></div>
 
 {% else %}
-<div class="bar-fill red" style="width: {{ emission_percent }}%"></div>
+<div class="bar-fill red" style="width: {{ emission_percent|floatformat:0 }}%"></div>
 
 {% endif %}
 

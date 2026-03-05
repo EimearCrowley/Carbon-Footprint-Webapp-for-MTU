@@ -13,6 +13,13 @@ class ModeSelectionForm(forms.Form):
     duo_mode = forms.BooleanField(required=False, label="Use two modes of transport?")
     mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
 
+CARPOOL_CHOICES = [
+(1, "1 person (Just me)"),
+(2, "2 people"),
+(3, "3 people"),
+(4, "4 people"),
+(5, "5 people"),
+]
 class TransportDetailsForm(forms.Form):
     fuel_type = forms.ChoiceField(
         choices=[('petrol', 'Petrol'), ('diesel', 'Diesel'), ('electric', 'Electric')],
@@ -47,7 +54,11 @@ ENGINE_CHOICES_ELECTRIC = [
     ('Hybrid','Hybrid'),
     ('Fully Electric','Fully Electric')
 ]
-
+passengers = forms.ChoiceField(
+    choices=CARPOOL_CHOICES,
+    label="How many people are in the car?",
+    initial=1
+)
 # class ModeSelectionForm(forms.Form):
 #     mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
 #     duo_mode = forms.BooleanField(required=False, label="Do you use a secondary mode of transport?")
