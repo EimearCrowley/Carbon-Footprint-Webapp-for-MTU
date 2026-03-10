@@ -80,7 +80,11 @@
 
         <button type="submit">Sign Up</button>
     </form>
-
+    {% if form.errors %}
+    <div style="color:red; margin-top:15px;">
+        {{ form.errors }}
+    </div>
+    {% endif %}
     <a href="/accounts/login/">Already have an account? Login</a>
 
 </div>

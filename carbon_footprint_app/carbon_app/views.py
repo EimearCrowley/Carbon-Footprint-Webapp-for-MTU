@@ -7,6 +7,14 @@ from .google_maps import get_distance_km
 from .models import EmissionRecord
 import re
 
+CAR_PARK_NAMES = {
+    "bishopstown": "MTU Bishopstown Main Car Park",
+    "sports_hall": "MTU Sports Hall Car Park",
+    "student_centre": "MTU Student Centre Car Park",
+    "park_ride": "MTU Park & Ride",
+    "st_finbarrs": "St Finbarr's Car Park",
+    "carrolls_quay": "Carroll's Quay Park & Ride"
+}
 
 # -----------------------------
 # MODE SELECTION
@@ -152,16 +160,9 @@ def results_view(request):
         distance_km += 4.5
         
     request.session['distance_km'] = distance_km
-    destination_names = {
-    "bishopstown": "MTU Bishopstown Main Car Park",
-    "sports_hall": "MTU Sports Hall Car Park",
-    "student_centre": "MTU Student Centre Car Park",
-    "park_ride": "MTU Park & Ride",
-    "st_finbarrs": "St Finbarr's Car Park",
-    "carrolls_quay": "Carroll's Quay Park & Ride"
-}
 
-    destination_display = destination_names.get(destination, destination)
+    destination_display = CAR_PARK_NAMES.get(destination, destination)
+
     # EMISSION FACTORS
     emission_factors = {
 
@@ -243,6 +244,7 @@ def results_view(request):
             comparison = "above"
         elif difference < 0:
             comparison = "below"
+            difference = abs(difference)
         else:
             comparison = "equal"
 
@@ -294,6 +296,18 @@ def summary_view(request):
             status = "red"
             comparison = "above"
 
+    destination = request.session.get("destination")
+
+    destination_names = {
+    "bishopstown": "MTU Bishopstown Main Car Park",
+    "sports_hall": "MTU Sports Hall Car Park",
+    "student_centre": "MTU Student Centre Car Park",
+    "park_ride": "MTU Park & Ride",
+    "st_finbarrs": "St Finbarr's Car Park",
+    "carrolls_quay": "Carroll's Quay Park & Ride"
+    }
+
+    destination_display = destination_names.get(destination, destination)
 
     context = {
 
@@ -303,7 +317,7 @@ def summary_view(request):
         "engine_option": request.session.get("engine_option"),
 
         "origin": request.session.get("origin"),
-        "destination": request.session.get("destination"),
+        "destination": destination_display,
         "days": request.session.get("days"),
         "distance_km": request.session.get("distance_km"),
 
@@ -354,7 +368,10 @@ def dashboard_view(request):
 @login_required
 def previous_results(request):
 
-    results = EmissionRecord.objects.filter(user=request.user).order_by("-created_at")
+    results = EmissionRecord.objects.filter(user=request.user).order_by("created_at")
+    
+    for r in results:
+        r.destination_display = CAR_PARK_NAMES.get(r.destination, r.destination.title())
 
     if results:
         total = sum(r.weekly_emissions for r in results)
