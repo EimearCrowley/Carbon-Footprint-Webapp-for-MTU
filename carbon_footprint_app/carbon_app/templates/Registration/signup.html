@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+{% load static %}
     <title>Sign Up</title>
 
     <style>
@@ -56,6 +57,13 @@
             margin-top: 15px;
             color: #27ae60;
         }
+         .mtu-logo{
+        position:fixed;
+        bottom:15px;
+        right:20px;
+        width:120px;
+        opacity:0.9;
+        }
     </style>
 
 </head>
@@ -76,6 +84,6 @@
     <a href="/accounts/login/">Already have an account? Login</a>
 
 </div>
-
+<img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>
 </html>

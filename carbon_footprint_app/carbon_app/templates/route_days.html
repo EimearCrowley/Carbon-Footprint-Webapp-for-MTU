@@ -108,6 +108,13 @@ input[type="number"]{
 #secondary-section{
   display:none;
 }
+.mtu-logo{
+  position:fixed;
+  bottom:15px;
+  right:20px;
+  width:120px;
+  opacity:0.9;
+}
 </style>
 </head>
 
@@ -205,7 +212,7 @@ document.getElementById("secondary-section").style.display="block";
 }
 
 </script>
-
+<img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>
 </html>
 

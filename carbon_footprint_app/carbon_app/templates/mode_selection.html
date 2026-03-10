@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+{% load static %}
 
   <meta charset="UTF-8">
   <title>Carbon Travel Calculator</title>
@@ -106,6 +107,23 @@
       display: none;
       margin-top: 30px;
     }
+    .mtu-logo{
+      position:fixed;
+      bottom:15px;
+      right:20px;
+      width:120px;
+      opacity:0.9;
+  } 
+  .info-note{
+    background:#ecf9f1;
+    border:1px solid #27ae60;
+    color:#2c3e50;
+    padding:12px 16px;
+    border-radius:10px;
+    font-size:14px;
+    margin-bottom:25px;
+    text-align:center;
+  }
   </style>
 </head>
 <body>
@@ -134,6 +152,11 @@
 
 <h1>Carbon Travel Calculator</h1>
 <h2>How are you travelling today?</h2>
+<p class="info-note">
+If you are travelling using the 🚍<strong>Park & Ride</strong>, please choose only 
+<strong>one transport mode</strong>. The Park & Ride option automatically includes 
+the bus journey to MTU Bishopstown.
+</p>
 
     <form method="post">
       {% csrf_token %}
@@ -199,6 +222,7 @@
     duoCheckbox.addEventListener('change', toggleSecondaryFields);
     window.onload = toggleSecondaryFields;
   </script>
+<img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>
 </html>
 

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+{% load static %}
 <title>Your Carbon History</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -90,6 +91,13 @@ h1{
 
 .tips h3{
     margin-top:0;
+}
+.mtu-logo{
+  position:fixed;
+  bottom:15px;
+  right:20px;
+  width:120px;
+  opacity:0.9;
 }
 
 </style>
@@ -213,6 +221,6 @@ legend:{display:true}
 });
 
 </script>
-
+<img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>
 </html>

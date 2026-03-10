@@ -110,6 +110,13 @@ h2{color:#27ae60;}
 .btn:hover{
   background:#219150;
 }
+.mtu-logo{
+  position:fixed;
+  bottom:15px;
+  right:20px;
+  width:120px;
+  opacity:0.9;
+}
 
 </style>
 </head>
@@ -124,7 +131,7 @@ h2{color:#27ae60;}
 <div class="summary">
 
 <p><strong>From:</strong> {{ origin }}</p>
-<p><strong>To:</strong> {{ destination }}</p>
+<p><strong>To:</strong> {{ submission.get_destination_display }}</p>
 <p><strong>Days per week:</strong> {{ days }}</p>
 
 <p>
@@ -222,6 +229,6 @@ Your emissions are much higher than average. Try reducing car journeys, using pu
 </form>
 
 </div>
-
+<img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>
 </html>

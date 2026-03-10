@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+{% load static %}
     <title>Dashboard</title>
 
 <style>
@@ -46,6 +47,13 @@ h1{
     top:20px;
     right:30px;
 }
+ .mtu-logo{
+        position:fixed;
+        bottom:15px;
+        right:20px;
+        width:120px;
+        opacity:0.9;
+        }
 </style>
 
 </head>
@@ -73,6 +81,6 @@ h1{
 <a href="{% url 'previous_results' %}" class="btn">View Previous Results</a>
 
 </div>
-
+<img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>
 </html>

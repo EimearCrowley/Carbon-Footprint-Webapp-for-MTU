@@ -147,8 +147,21 @@ def results_view(request):
 
     distance_km = get_distance_km(origin, destination)
 
+    # ADD BUS DISTANCE IF PARK & RIDE
+    if destination == "park_ride":
+        distance_km += 4.5
+        
     request.session['distance_km'] = distance_km
+    destination_names = {
+    "bishopstown": "MTU Bishopstown Main Car Park",
+    "sports_hall": "MTU Sports Hall Car Park",
+    "student_centre": "MTU Student Centre Car Park",
+    "park_ride": "MTU Park & Ride",
+    "st_finbarrs": "St Finbarr's Car Park",
+    "carrolls_quay": "Carroll's Quay Park & Ride"
+}
 
+    destination_display = destination_names.get(destination, destination)
     # EMISSION FACTORS
     emission_factors = {
 
@@ -237,7 +250,7 @@ def results_view(request):
 
         'mode': mode,
         'origin': origin,
-        'destination': destination,
+        'destination': destination_display,
         'days': days,
         'distance_km': distance_km,
         'weekly_emissions': weekly_emissions,

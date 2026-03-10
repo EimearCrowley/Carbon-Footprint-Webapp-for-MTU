@@ -117,7 +117,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [ BASE_DIR / "static", ]
+STATICFILES_DIRS = [ BASE_DIR / "carbon_app" / "static", ]
 # For development STATICFILES_DIRS = [BASE_DIR / "static"]
 
 GOOGLE_MAPS_API_KEY = "AIzaSyDVqmdzKD2m1ikca439nCrJvvGAtGD4VnA"
