@@ -80,12 +80,12 @@ class RouteDaysForm(forms.Form):
     )
 
     CAR_PARK_CHOICES = [
-        ("bishopstown", "Bishopstown Main 🅿️"),
-        ("sports_hall", "Sports Hall 🏋️‍♂️"),
-        ("student_centre", "Student Centre 🎓"),
-        ("park_ride", "Park & Ride 🚌"),
-        ("st_finbarrs", "St Finbarr’s 🏛️"),
-        ("carrolls_quay", "Carroll’s Quay 🌉"),
+        ("bishopstown", "MTU Bishopstown Barrier Car Park"), # 🅿️
+        ("sports_hall", "MTU Bishopstown Tiered Car Park"), #🏋️‍♂️
+        ("student_centre", "MTU Bishopstown Student Centre Car Park"), #🎓
+        ("park_ride", "Park & Ride"), #🚌
+        ("st_finbarrs", "St Finbarr’s"), # 🏛️️
+        ("carrolls_quay", "Carroll’s Quay"), #🌉
     ]
 
     destination = forms.ChoiceField(

@@ -2,15 +2,24 @@ import requests
 from django.conf import settings
 
 DESTINATIONS = {
-    "bishopstown": "MTU Cork Bishopstown Campus",
-    "sports_hall": "MTU Cork Sports Hall",
-    "student_centre": "MTU Cork Student Centre",
-    "park_ride": "MTU Cork Park and Ride",
-    "st_finbarrs": "St Fin Barre's Cathedral Cork",
-    "carrolls_quay": "Carroll's Quay Cork"
+    "bishopstown": "MTU Bishopstown Campus, Bishopstown, Cork, Ireland",
+    "sports_hall": "MTU Sports Hall, Bishopstown, Cork, Ireland",
+    "student_centre": "MTU Student Centre, Bishopstown, Cork, Ireland",
+    "park_ride": "MTU Park and Ride, Bishopstown, Cork, Ireland",
+    "st_finbarrs": "St Fin Barre's Cathedral, Cork, Ireland",
+    "carrolls_quay": "Carroll's Quay Car Park, Cork, Ireland"
 }
 
-def get_distance_km(origin, destination):
+mode_map = {
+    "car": "driving",
+    "bus": "transit",
+    "train": "transit",
+    "bike": "bicycling",
+    "walk": "walking",
+    "scooter": "driving"
+}
+
+def get_distance_km(origin, destination, mode="driving"):
 
     api_key = settings.GOOGLE_MAPS_API_KEY
 

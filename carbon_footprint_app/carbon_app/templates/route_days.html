@@ -72,6 +72,7 @@ input[type="number"]{
   justify-content:center;
   cursor:pointer;
   border:3px solid transparent;
+  text-align: center;
 }
 
 .mode-option.selected{
@@ -115,6 +116,7 @@ input[type="number"]{
   width:120px;
   opacity:0.9;
 }
+
 </style>
 </head>
 
@@ -158,7 +160,6 @@ input[type="number"]{
 <input type="radio" name="destination" value="{{value}}" style="display:none;">
 
 <div class="icon">
-
 {% if value == 'bishopstown' %}🅿️
 {% elif value == 'sports_hall' %}🏋️‍♂️
 {% elif value == 'student_centre' %}🎓
@@ -166,10 +167,19 @@ input[type="number"]{
 {% elif value == 'st_finbarrs' %}🏛️
 {% elif value == 'carrolls_quay' %}🌉
 {% endif %}
-
 </div>
 
 <span>{{label}}</span>
+
+<div class="icon">
+{% if value == 'bishopstown' %}🅿️
+{% elif value == 'sports_hall' %}🏋️‍♂️
+{% elif value == 'student_centre' %}🎓
+{% elif value == 'park_ride' %}🚌
+{% elif value == 'st_finbarrs' %}🏛️
+{% elif value == 'carrolls_quay' %}🌉
+{% endif %}
+</div>
 
 </label>
 

@@ -119,7 +119,12 @@ text-decoration:underline;
 
 <div class="summary-item">
 <h3>Transport Mode</h3>
+{% if mode_1 == "scooter" %}
+<p>E‑Scooter/Bike</p>
+{% else %}
 <p>{{ mode_1|title }}</p>
+{% endif %}
+
 </div>
 
 {% if mode_2 %}

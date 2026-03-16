@@ -8,12 +8,12 @@ from .models import EmissionRecord
 import re
 
 CAR_PARK_NAMES = {
-    "bishopstown": "MTU Bishopstown Main Car Park",
-    "sports_hall": "MTU Sports Hall Car Park",
-    "student_centre": "MTU Student Centre Car Park",
+    "bishopstown": "MTU Bishopstown Barrier Car Park",
+    "sports_hall": "MTU Bishopstown Tiered Car Park",
+    "student_centre": "MTU Bishopstown Student Centre Car Park",
     "park_ride": "MTU Park & Ride",
     "st_finbarrs": "St Finbarr's Car Park",
-    "carrolls_quay": "Carroll's Quay Park & Ride"
+    "carrolls_quay": "Carroll's Quay Car Park"
 }
 
 # -----------------------------
@@ -153,7 +153,7 @@ def results_view(request):
     destination = request.session.get('destination')
     days = int(request.session.get('days', 0))
 
-    distance_km = get_distance_km(origin, destination)
+    distance_km = get_distance_km(origin, destination,mode)
 
     # ADD BUS DISTANCE IF PARK & RIDE
     if destination == "park_ride":
@@ -210,7 +210,7 @@ def results_view(request):
                 factor = emission_factors["car_electric"][engine_option]
 
         else:
-            factor = emission_factors.get(mode, 0.05)
+            factor = emission_factors.get(mode, 0.05)   # default value of 0.05 for unknown modes
 
         total_emissions = distance_km * 2 * days * factor
         weekly_emissions = round(total_emissions / passengers, 2)
@@ -298,16 +298,7 @@ def summary_view(request):
 
     destination = request.session.get("destination")
 
-    destination_names = {
-    "bishopstown": "MTU Bishopstown Main Car Park",
-    "sports_hall": "MTU Sports Hall Car Park",
-    "student_centre": "MTU Student Centre Car Park",
-    "park_ride": "MTU Park & Ride",
-    "st_finbarrs": "St Finbarr's Car Park",
-    "carrolls_quay": "Carroll's Quay Park & Ride"
-    }
-
-    destination_display = destination_names.get(destination, destination)
+    destination_display = CAR_PARK_NAMES.get(destination, destination)
 
     context = {
 
@@ -395,3 +386,4 @@ def delete_result(request, result_id):
     result.delete()
 
     return redirect("previous_results")
+    

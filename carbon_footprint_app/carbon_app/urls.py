@@ -4,10 +4,9 @@ from carbon_app import views
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
 
     # login/logout urls
-    path('accounts/', include('django.contrib.auth.urls')),
+    #path('accounts/', include('django.contrib.auth.urls')),
     path('', views.mode_selection_view, name='home'),
     path('previous-results/', views.previous_results, name='previous_results'),
     path('delete-result/<int:result_id>/', views.delete_result, name='delete_result'),
