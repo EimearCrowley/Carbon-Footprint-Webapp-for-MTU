@@ -110,10 +110,17 @@
     .mtu-logo{
       position:fixed;
       bottom:15px;
-      right:20px;
+      left:20px;
       width:120px;
       opacity:0.9;
   } 
+    .app-logo{
+    position:fixed;
+    top:15px;
+    left:20px;
+    width:120px;
+    z-index:1000;
+    }
   .info-note{
     background:#ecf9f1;
     border:1px solid #27ae60;
@@ -127,6 +134,7 @@
   </style>
 </head>
 <body>
+  <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
   <div class="container">
 
 <div style="position:absolute; top:20px; right:30px;">

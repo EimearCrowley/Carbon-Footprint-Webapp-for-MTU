@@ -131,15 +131,24 @@ h2{
 .mtu-logo{
   position:fixed;
   bottom:15px;
-  right:20px;
+  left:20px;
   width:120px;
   opacity:0.9;
+}
+
+.app-logo{
+    position:fixed;
+    top:15px;
+    left:20px;
+    width:120px;
+    z-index:1000;
 }
 
 </style>
 </head>
 
 <body>
+    <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
 
 <div class="container">
 
@@ -150,7 +159,7 @@ h2{
 <label>Select the days that this route applies to.</label>
 
 <p id="day-counter">
-  0 / {{ remaining_days|default:7 }} days selected
+{{ selected_total }} / {{ total_days }} days selected
 </p>
 
 <form method="post">
@@ -158,100 +167,115 @@ h2{
 
 <div class="day-grid">
 
-<label class="day-tile {% if 'mon' in used_days %}disabled{% endif %}">
-<input type="checkbox" name="days_selected" value="mon" {% if 'mon' in used_days %}disabled{% endif %}>
-<span>Mon</span>
-</label>
+{% for day, label in day_names.items %}
 
-<label class="day-tile {% if 'tue' in used_days %}disabled{% endif %}">
-<input type="checkbox" name="days_selected" value="tue" {% if 'tue' in used_days %}disabled{% endif %}>
-<span>Tue</span>
-</label>
+<div class="day-tile {% if day in used_days %}disabled{% endif %}
+{% if day in current_days %}selected{% endif %}"
+     data-day="{{ day }}">
+    {{ label }}
+</div>
 
-<label class="day-tile {% if 'wed' in used_days %}disabled{% endif %}">
-<input type="checkbox" name="days_selected" value="wed" {% if 'wed' in used_days %}disabled{% endif %}>
-<span>Wed</span>
-</label>
-
-<label class="day-tile {% if 'thu' in used_days %}disabled{% endif %}">
-<input type="checkbox" name="days_selected" value="thu" {% if 'thu' in used_days %}disabled{% endif %}>
-<span>Thu</span>
-</label>
-
-<label class="day-tile {% if 'fri' in used_days %}disabled{% endif %}">
-<input type="checkbox" name="days_selected" value="fri" {% if 'fri' in used_days %}disabled{% endif %}>
-<span>Fri</span>
-</label>
-
-<label class="day-tile {% if 'sat' in used_days %}disabled{% endif %}">
-<input type="checkbox" name="days_selected" value="sat" {% if 'sat' in used_days %}disabled{% endif %}>
-<span>Sat</span>
-</label>
-
-<label class="day-tile {% if 'sun' in used_days %}disabled{% endif %}">
-<input type="checkbox" name="days_selected" value="sun" {% if 'sun' in used_days %}disabled{% endif %}>
-<span>Sun</span>
-</label>
+{% endfor %}
 
 </div>
 
-<button type="submit" class="btn">Next</button>
+<!-- HIDDEN INPUT -->
+<div id="hidden-days"></div>
+
+<button type="submit" class="btn">Continue</button>
 
 </form>
+
 </div>
 
 <script>
-const dayTiles = document.querySelectorAll('.day-tile');
-const maxDays = {{ remaining_days|default:7 }};
+
+let maxDays = {{ total_days|default:7 }};
+
+// ✅ ONLY count other journeys initially
+let selectedTotal = {{ selected_total|default:0 }};
+
+// ✅ preload current journey days
+let selectedDays = {{ current_days|default:"[]"|safe }};
+
 const counter = document.getElementById("day-counter");
+const tiles = document.querySelectorAll(".day-tile");
+const hiddenInput = document.getElementById("days_selected");
 
-function getSelectedCount() {
-    return document.querySelectorAll('.day-tile input:checked').length;
-}
+// count current journey days too
+selectedTotal += selectedDays.length;
 
-function updateCounter() {
-    const selectedCount = getSelectedCount();
-    counter.textContent = selectedCount + " / " + maxDays + " days selected";
-}
+// update UI
+function updateCounter(){
+    counter.innerText = selectedTotal + " / " + maxDays + " days selected";
 
-function updateTileStates() {
-    const selectedCount = getSelectedCount();
+    tiles.forEach(tile => {
 
-    dayTiles.forEach(tile => {
-        const checkbox = tile.querySelector('input');
-
-        if (tile.classList.contains("disabled")) return;
-
-        if (selectedCount >= maxDays && !checkbox.checked) {
-            tile.classList.add("locked");
-        } else {
-            tile.classList.remove("locked");
+        if (!tile.classList.contains("selected") && selectedTotal > maxDays) {
+            tile.classList.add("disabled");
+        } else if (!tile.classList.contains("used")) {
+            tile.classList.remove("disabled");
         }
+
     });
 }
 
-dayTiles.forEach(tile => {
 
-    if (tile.classList.contains("disabled")) return;
+function updateHiddenInputs() {
+    const container = document.getElementById("hidden-days");
+    container.innerHTML = "";
 
-    const checkbox = tile.querySelector('input');
+    selectedDays.forEach(day => {
+        let input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "days_selected";
+        input.value = day;
+        container.appendChild(input);
+    });
+}
 
-    tile.addEventListener('click', (e) => {
-        e.preventDefault();
+// initialise tiles
+tiles.forEach(tile => {
 
-        if (tile.classList.contains("locked")) return;
+    let day = tile.dataset.day;
 
-        checkbox.checked = !checkbox.checked;
-        tile.classList.toggle('selected');
+    if (tile.classList.contains("disabled")) {
+        tile.classList.add("used"); // locked from other journeys
+    }
 
+    // ensure current days are in array
+    if (tile.classList.contains("selected") && !selectedDays.includes(day)) {
+        selectedDays.push(day);
+    }
+
+    tile.addEventListener("click", function(){
+
+        // block ONLY other journeys
+        if (tile.classList.contains("used")) return;
+
+        if (tile.classList.contains("selected")) {
+            tile.classList.remove("selected");
+            selectedDays = selectedDays.filter(d => d !== day);
+            selectedTotal--;
+        } else {
+
+            if (selectedTotal >= maxDays) return;
+
+            tile.classList.add("selected");
+            selectedDays.push(day);
+            selectedTotal++;
+        }
+
+        updateHiddenInputs();
         updateCounter();
-        updateTileStates();
     });
 
 });
 
+// initial render
+updateHiddenInputs();
 updateCounter();
-updateTileStates();
+
 </script>
 <img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>

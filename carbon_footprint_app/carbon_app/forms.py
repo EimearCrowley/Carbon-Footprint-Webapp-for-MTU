@@ -1,17 +1,5 @@
 from django import forms
 
-
-
-DAYS_OF_WEEK = [
-    ("mon","Mon"),
-    ("tue","Tue"),
-    ("wed","Wed"),
-    ("thu","Thu"),
-    ("fri","Fri"),
-    ("sat","Sat"),
-    ("sun","Sun"),
-]
-
 class ModeSelectionForm(forms.Form):
     MODE_CHOICES = [
         ('car', 'Car'),
@@ -66,6 +54,17 @@ ENGINE_CHOICES_ELECTRIC = [
     ('Hybrid','Hybrid'),
     ('Fully Electric','Fully Electric')
 ]
+
+DAYS_OF_WEEK = [
+    ("mon","Mon"),
+    ("tue","Tue"),
+    ("wed","Wed"),
+    ("thu","Thu"),
+    ("fri","Fri"),
+    ("sat","Sat"),
+    ("sun","Sun"),
+]
+
 passengers = forms.ChoiceField(
     choices=CARPOOL_CHOICES,
     label="How many people are in the car?",

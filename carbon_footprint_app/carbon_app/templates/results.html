@@ -160,9 +160,17 @@ h2{color:#27ae60;}
 .mtu-logo{
   position:fixed;
   bottom:15px;
-  right:20px;
+  left:20px;
   width:120px;
   opacity:0.9;
+}
+
+.app-logo{
+    position:fixed;
+    top:15px;
+    left:20px;
+    width:120px;
+    z-index:1000;
 }
 
 .link-btn{
@@ -182,6 +190,7 @@ h2{color:#27ae60;}
 </head>
 
 <body>
+  <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
 
 <div class="container">
 

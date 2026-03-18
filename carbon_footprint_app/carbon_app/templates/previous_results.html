@@ -95,15 +95,46 @@ h1{
 .mtu-logo{
   position:fixed;
   bottom:15px;
-  right:20px;
+  left:20px;
   width:120px;
   opacity:0.9;
+}
+
+.app-logo{
+    position:fixed;
+    top:15px;
+    left:20px;
+    width:120px;
+    z-index:1000;
+}
+
+.day-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:8px;
+    margin-top:10px;
+}
+
+.day-box{
+    background:#27ae60;
+    color:white;
+    padding:8px;
+    border-radius:6px;
+    font-size:12px;
+    text-align:center;
+}
+
+/* UNUSED DAYS */
+.day-box.empty{
+    background:#d8dbdb;
+    color:#7f8c8d;
 }
 
 </style>
 </head>
 
 <body>
+    <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
 
 <div class="container">
 
@@ -117,28 +148,65 @@ h1{
 
 <div class="result-card">
 
-<p><strong>Route:</strong> 
-{{ r.origin }} 
+<!-- HEADER -->
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <strong>{{ r.created_at|date:"d M Y" }}</strong>
+    <span class="date">{{ r.created_at|date:"H:i" }}</span>
+</div>
+
+<hr style="margin:10px 0;">
+
+<!-- ROUTE -->
+<p><strong>Route:</strong><br>
+{{ r.origin }}
 {% if r.secondary_origin %}
 → {{ r.secondary_origin }}
 {% endif %}
-→ {{ r.destination_display }}</p>
-
-<p><strong>Transport:</strong> 
-{{ r.transport_mode | title }}
-{% if r.mode_2 %}
-→ {{ r.mode_2|title }}
-{% endif %}
+→ {{ r.destination_display }}
 </p>
 
-<p><strong>Distance:</strong> {{ r.distance_km }} km</p>
+<!-- STATS ROW -->
+<div style="display:flex; justify-content:space-between; margin-top:10px;">
 
-<p><strong>Weekly CO₂:</strong> {{ r.weekly_emissions }} kg</p>
+<div>
+<p style="margin:0; font-size:13px;">Distance</p>
+<strong>{{ r.total_distance|floatformat:1 }} km</strong>
+</div>
 
-<p class="date">
-{{ r.created_at|date:"d M Y H:i" }}
-</p>
+<div>
+<p style="margin:0; font-size:13px;">CO₂</p>
+<strong>{{ r.weekly_emissions|floatformat:2 }} kg</strong>
+</div>
 
+
+</div>
+
+<!-- WEEK VIEW -->
+<div class="day-grid">
+
+{% for d in r.schedule %}
+
+<div class="day-box {% if not d.used %}empty{% endif %}">
+
+    <strong>{{ d.day }}</strong><br>
+
+    {% if d.used %}
+        <span style="font-size:11px;">
+            {{ d.mode|title }}
+        </span>
+    {% else %}
+        <span style="font-size:11px; color:#999;">
+            —
+        </span>
+    {% endif %}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<!-- DELETE -->
 <a href="{% url 'delete_result' r.id %}" class="delete-btn">
 Delete
 </a>

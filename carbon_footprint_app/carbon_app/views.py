@@ -8,6 +8,7 @@ from .forms import TransportDetailsForm, ModeSelectionForm, RouteDaysForm, Selec
 from .google_maps import get_distance_km
 from .models import EmissionRecord
 import re
+import json
 
 CAR_PARK_NAMES = {
     "bishopstown": "MTU Bishopstown Barrier Car Park",
@@ -27,6 +28,8 @@ day_names = {
     "sat": "Sat",
     "sun": "Sun"
 }
+
+
 
 # -----------------------------
 # MODE SELECTION
@@ -233,17 +236,30 @@ def results_view(request):
             'Fully Electric': 0.02,
         },
 
-        "bus": 0.05,
-        "train": 0.04,
-        "bike": 0.0,
+        "bus": 0.101,
+        "train": 0.041,
+        "bike": 0.021,
         "walk": 0.0,
-        "scooter": 0.02
+        "scooter": 0.022
     }
 
     total_weekly_emissions = 0
     total_distance = 0
 
+    schedule_data = []
+
     for j in journeys:
+
+        if j.get("mode_2"):
+            mode_display = f"{j['mode']} → {j['mode_2']}"
+        else:
+            mode_display = j["mode"]
+
+        for d in j.get("days", []):
+            schedule_data.append({
+                "day": d,
+                "mode": mode_display
+            })
 
         mode = j["mode"]
         mode_2 = j.get("mode_2")
@@ -342,6 +358,18 @@ def results_view(request):
     # convert to percentage of half bar (50%)
     offset_percent = (raw_difference / max_diff) * 50 if max_diff else 0
 
+    EmissionRecord.objects.create(
+        user=request.user,
+        origin=journeys[0]["origin"] if journeys else "",
+        destination=journeys[-1]["destination"] if journeys else "",
+        transport_mode=journeys[0]["mode"] if journeys else "car",
+        mode_2=journeys[0].get("mode_2"),
+        secondary_origin=journeys[0].get("secondary_origin"),
+        distance_km=total_distance,
+        weekly_emissions=weekly_emissions,
+        days=json.dumps(schedule_data)
+)
+
     return render(request, "results.html", {
         "weekly_emissions": weekly_emissions,
         "distance_km": total_distance,
@@ -354,65 +382,6 @@ def results_view(request):
         "schedule": schedule,
         "offset_percent": offset_percent
     })
-
-
-
-
-# -----------------------------
-# SUMMARY PAGE
-# -----------------------------
-def summary_view(request):
-
-    weekly_emissions = request.session.get("weekly_emissions")
-
-    national_average = 32.7
-
-    difference = 0
-    comparison = ""
-    status = "yellow"
-
-    if weekly_emissions:
-
-        difference = round(weekly_emissions - national_average,2)
-
-        if weekly_emissions < national_average * 0.7:
-            status = "green"
-            comparison = "well below"
-
-        elif weekly_emissions <= national_average:
-            status = "yellow"
-            comparison = "around"
-
-        else:
-            status = "red"
-            comparison = "above"
-
-    destination = request.session.get("destination")
-
-    destination_display = CAR_PARK_NAMES.get(destination, destination)
-
-    context = {
-
-        "mode_1": request.session.get("mode_1"),
-        "mode_2": request.session.get("mode_2"),
-        "fuel_type": request.session.get("fuel_type"),
-        "engine_option": request.session.get("engine_option"),
-
-        "origin": request.session.get("origin"),
-        "secondary_origin": request.session.get("secondary_origin"),
-        "destination": destination_display,
-        "days": request.session.get("days"),
-        "distance_km": request.session.get("distance_km"),
-
-        "weekly_emissions": weekly_emissions,
-
-        "national_average": national_average,
-        "difference": abs(difference),
-        "comparison": comparison,
-        "status": status
-}
-
-    return render(request,"summary.html",context)
 
 # Select Days
 def select_days_view(request):
@@ -451,12 +420,26 @@ def select_days_view(request):
 
     # GET request
     used_days = []
-    for j in journeys:
-        used_days.extend(j["days"])
+    current_journey_days = []
+
+    if journeys:
+        current_journey = journeys[-1]
+        current_journey_days = current_journey.get("days", [])
+        
+        for j in journeys[:-1]:
+            if "days" in j:
+                used_days.extend(j["days"])
+    
+    selected_total = len(used_days)
+    remaining_days = total_days - selected_total
 
     return render(request, "select_days.html", {
-        "remaining_days": request.session.get("remaining_days", total_days),
-        "used_days": used_days
+        "remaining_days": remaining_days,
+        "used_days": used_days,
+        "selected_total": selected_total,
+        "total_days": total_days,
+        "current_days": current_journey_days,
+        "day_names": day_names
     })
     
 
@@ -495,11 +478,31 @@ def dashboard_view(request):
 # -----------------------------
 @login_required
 def previous_results(request):
+    day_order = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
     results = EmissionRecord.objects.filter(user=request.user).order_by("created_at")
-    
+        
     for r in results:
         r.destination_display = CAR_PARK_NAMES.get(r.destination, r.destination.title())
+
+        try:
+            schedule_data = json.loads(r.days)
+        except:
+            schedule_data = []
+
+        day_map = {item["day"]: item["mode"] for item in schedule_data}
+        full_schedule = []
+
+        for d in day_order:
+            full_schedule.append({
+                "day": day_names.get(d, d),
+                "mode": day_map.get(d),
+                "used": d in day_map
+            })
+
+        r.schedule = full_schedule
+
+        r.total_distance = r.distance_km 
 
     if results:
         total = sum(r.weekly_emissions for r in results)
