@@ -183,7 +183,9 @@ text-decoration:underline;
 </div>
 
 <form action="{% url 'mode_selection' %}" method="get">
-<button type="submit" class="btn">Start Over</button>
+<a href="{% url 'reset_calculator' %}">
+    <button type="button" class="btn">Start Over</button>
+</a>
 </form>
 
 <div class="footer">

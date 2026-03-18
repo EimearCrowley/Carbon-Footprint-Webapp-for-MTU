@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
-from .forms import TransportDetailsForm, ModeSelectionForm, RouteDaysForm
+from .forms import TransportDetailsForm, ModeSelectionForm, RouteDaysForm, SelectDaysForm
 from .google_maps import get_distance_km
 from .models import EmissionRecord
 import re
@@ -110,7 +110,18 @@ def route_days_view(request):
 
     duo_mode = request.session.get("duo_mode")
 
+    if "journeys" not in request.session:
+        request.session["journeys"] = []
+
+    journeys = request.session.get("journeys", [])
+    first_journey = len(journeys) == 0
+
     if request.method == "POST":
+        
+        remaining_days = request.session.get("remaining_days")
+
+        if first_journey:
+            remaining_days = request.POST.get("days_per_week")
 
         form = RouteDaysForm(request.POST)
 
@@ -119,7 +130,13 @@ def route_days_view(request):
             origin = form.cleaned_data["origin"]
             secondary_origin = form.cleaned_data.get("secondary_origin")
             destination = form.cleaned_data["destination"]
-            days = form.cleaned_data["days_per_week"]
+
+            
+            if first_journey:
+                days_per_week = form.cleaned_data["days_per_week"]
+                request.session["days_per_week"] = days_per_week
+            else:
+                days_per_week = request.session.get("days_per_week")
 
             formatted_origin = is_eircode(origin)
 
@@ -128,19 +145,49 @@ def route_days_view(request):
             else:
                 origin = origin.title()
 
-            request.session["origin"] = origin
-            request.session["secondary_origin"] = secondary_origin
-            request.session["destination"] = destination
-            request.session["days"] = days
+            # store weekly days once
+            if first_journey:
+                request.session["days_per_week"] = days_per_week
 
-            return redirect("results")
+            # create journey
+            journey = {
+                "origin": origin,
+                "secondary_origin": secondary_origin,
+                "destination": destination,
+                "mode": request.session.get("mode_1"),
+                "mode_2": request.session.get("mode_2"),
+                "fuel_type": request.session.get("fuel_type"),
+                "engine_option": request.session.get("engine_option"),
+                "days": []
+            }
+
+            journeys = request.session.get("journeys", [])
+            journeys.append(journey)
+
+            request.session["journeys"] = journeys
+
+            
+            total_days = request.session.get("days_per_week")
+
+            request.session["remaining_days"] = request.session.get("days_per_week") 
+            return redirect("select_days")
+        else:
+            print(form.errors)  # if form is not valid, print error
 
     else:
-        form = RouteDaysForm()
+        remaining_days = request.session.get("remaining_days")
+        form = RouteDaysForm(remaining_days=remaining_days)
+
+    used_days = []
+    for j in journeys:
+        used_days.extend(j["days"])
 
     return render(request,"route_days.html",{
         "form":form,
-        "duo_mode":duo_mode
+        "duo_mode":duo_mode,
+        "remaining_days": request.session.get("remaining_days",0),
+        "first_journey": first_journey,
+        "used_days": used_days
     })
 
 
@@ -149,37 +196,10 @@ def route_days_view(request):
 # -----------------------------
 def results_view(request):
 
-    mode = request.session.get('mode_1')
-    mode_2 = request.session.get('mode_2')
-    fuel_type = request.session.get('fuel_type')
-    engine_option = request.session.get('engine_option')
     passengers = int(request.session.get("passengers",1))
-    origin = request.session.get('origin')
-    secondary_origin = request.session.get("secondary_origin")
-    destination = request.session.get('destination')
-    days = int(request.session.get('days', 0))
 
-    # SINGLE MODE DISTANCE
-    if not mode_2 or not secondary_origin:
-        distance_km = get_distance_km(origin, destination, mode)
-        distance_1 = distance_km
-        distance_2 = 0
+    journeys = request.session.get("journeys", [])
 
-# DUO MODE DISTANCE
-    else:
-        distance_1 = get_distance_km(origin, secondary_origin, mode)
-        distance_2 = get_distance_km(secondary_origin, destination, mode_2)
-        distance_km = distance_1 + distance_2
-
-    # ADD BUS DISTANCE IF PARK & RIDE
-    if destination == "park_ride":
-        distance_km += 4.5
-        
-    request.session['distance_km'] = distance_km
-
-    destination_display = CAR_PARK_NAMES.get(destination, destination)
-
-    # EMISSION FACTORS
     emission_factors = {
 
         "car_petrol": {
@@ -210,10 +230,38 @@ def results_view(request):
         "scooter": 0.02
     }
 
-    weekly_emissions = None
+    total_weekly_emissions = 0
+    total_distance = 0
 
-    try:
-        # FACTOR FOR MODE 1
+    for j in journeys:
+
+        mode = j["mode"]
+        mode_2 = j.get("mode_2")
+
+        origin = j["origin"]
+        secondary_origin = j.get("secondary_origin")
+        destination = j["destination"]
+
+        fuel_type = j.get("fuel_type")
+        engine_option = j.get("engine_option")
+
+        days = len(j["days"])
+
+        # DISTANCES
+        if mode_2 and secondary_origin:
+
+            distance_1 = get_distance_km(origin, secondary_origin, mode)
+            distance_2 = get_distance_km(secondary_origin, destination, mode_2)
+
+        else:
+
+            distance_1 = get_distance_km(origin, destination, mode)
+            distance_2 = 0
+
+        distance_km = distance_1 + distance_2
+        total_distance += distance_km
+
+        # FACTOR MODE 1
         if mode == "car":
 
             if fuel_type == "petrol":
@@ -228,74 +276,37 @@ def results_view(request):
         else:
             factor_1 = emission_factors.get(mode, 0.05)
 
+        # FACTOR MODE 2
+        factor_2 = emission_factors.get(mode_2, 0) if mode_2 else 0
 
-        # FACTOR FOR MODE 2
-        if mode_2:
-            factor_2 = emission_factors.get(mode_2, 0.05)
-        else:
-            factor_2 = 0
+        emissions = (distance_1 * factor_1 + distance_2 * factor_2) * 2 * days
 
+        total_weekly_emissions += emissions
 
-        # EMISSIONS FOR EACH LEG
-        emissions_1 = distance_1 * factor_1
-        emissions_2 = distance_2 * factor_2
+    weekly_emissions = round(total_weekly_emissions / passengers, 2)
 
-
-        # TOTAL WEEKLY EMISSIONS
-        total_emissions = (emissions_1 + emissions_2) * 2 * days
-        weekly_emissions = round(total_emissions / passengers, 2)
-
-    except Exception:
-        weekly_emissions = None
-
-    # SAVE TO SESSION
-    request.session['weekly_emissions'] = weekly_emissions
-
-    # SAVE TO DATABASE
-    if request.user.is_authenticated and weekly_emissions:
-        EmissionRecord.objects.create(
-            user=request.user,
-            origin=origin,
-            secondary_origin=secondary_origin,
-            destination=destination,
-            transport_mode=mode,
-            mode_2=mode_2,
-            distance_km=distance_km,
-            weekly_emissions=weekly_emissions
-        )
+    request.session["weekly_emissions"] = weekly_emissions
 
     national_weekly = 32.7
 
-    difference = None
-    comparison = None
+    difference = round(weekly_emissions - national_weekly, 2)
 
-    if weekly_emissions is not None:
+    if difference > 0:
+        comparison = "above"
+    elif difference < 0:
+        comparison = "below"
+        difference = abs(difference)
+    else:
+        comparison = "equal"
 
-        difference = round(weekly_emissions - national_weekly, 2)
+    return render(request, "results.html", {
 
-        if difference > 0:
-            comparison = "above"
-        elif difference < 0:
-            comparison = "below"
-            difference = abs(difference)
-        else:
-            comparison = "equal"
-
-    return render(request, 'results.html', {
-
-        'mode': mode,
-        'mode_2': mode_2,
-        'origin': origin,
-        'secondary_origin': secondary_origin,
-        'destination': destination_display,
-        'days': days,
-        'distance_km': distance_km,
-        'weekly_emissions': weekly_emissions,
-        'fuel_type': fuel_type,
-        'engine_option': engine_option,
-        'national_weekly': national_weekly,
-        'difference': difference,
-        'comparison': comparison,
+        "weekly_emissions": weekly_emissions,
+        "distance_km": total_distance,
+        "national_weekly": national_weekly,
+        "difference": difference,
+        "comparison": comparison,
+        "journeys": journeys
 
     })
 
@@ -358,6 +369,51 @@ def summary_view(request):
 
     return render(request,"summary.html",context)
 
+# Select Days
+def select_days_view(request):
+
+    journeys = request.session.get("journeys", [])
+    total_days = request.session.get("days_per_week")
+
+    form = SelectDaysForm(request.POST)
+
+    if request.method == "POST":
+
+        selected_days = request.POST.getlist("days_selected")
+
+        # 🚨 safety check
+        if not selected_days:
+            return render(request, "select_days.html", {
+                "error": "Please select at least one day."
+            })
+
+        # ✅ assign days to MOST RECENT journey
+        journeys[-1]["days"] = selected_days
+
+        request.session["journeys"] = journeys
+
+        # ✅ calculate totals
+        selected_total = sum(len(j["days"]) for j in journeys)
+
+        remaining_days = total_days - selected_total
+        request.session["remaining_days"] = remaining_days
+
+        # 🎯 decision logic
+        if remaining_days > 0:
+            return redirect("mode_selection")   # add another route
+        else:
+            return redirect("results")          # all days assigned
+
+    # GET request
+    used_days = []
+    for j in journeys:
+        used_days.extend(j["days"])
+
+    return render(request, "select_days.html", {
+        "remaining_days": request.session.get("remaining_days", total_days),
+        "used_days": used_days
+    })
+    
 
 # -----------------------------
 # SIGNUP
@@ -423,3 +479,11 @@ def delete_result(request, result_id):
 
     return redirect("previous_results")
     
+# Reset Calculator - clear session data
+def reset_calculator(request):
+
+    request.session.pop("journeys", None)
+    request.session.pop("days_per_week", None)
+    request.session.pop("remaining_days", None)
+
+    return redirect("mode_selection")

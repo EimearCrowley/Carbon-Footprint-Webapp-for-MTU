@@ -1,5 +1,17 @@
 from django import forms
 
+
+
+DAYS_OF_WEEK = [
+    ("mon","Mon"),
+    ("tue","Tue"),
+    ("wed","Wed"),
+    ("thu","Thu"),
+    ("fri","Fri"),
+    ("sat","Sat"),
+    ("sun","Sun"),
+]
+
 class ModeSelectionForm(forms.Form):
     MODE_CHOICES = [
         ('car', 'Car'),
@@ -59,19 +71,9 @@ passengers = forms.ChoiceField(
     label="How many people are in the car?",
     initial=1
 )
-# class ModeSelectionForm(forms.Form):
-#     mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
-#     duo_mode = forms.BooleanField(required=False, label="Do you use a secondary mode of transport?")
-#     mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
-
-# class TransportDetailsForm(forms.Form):
-#     fuel_type = forms.ChoiceField(choices=FUEL_CHOICES, widget=forms.RadioSelect)
-#     engine_option = forms.ChoiceField(
-#         choices=ENGINE_CHOICES_PETROL_DIESEL + ENGINE_CHOICES_ELECTRIC,
-#         widget=forms.RadioSelect)
     
 
-# ✅ Route days form (location + optional secondary location)
+# Route days form (location + optional secondary location)
 class RouteDaysForm(forms.Form):
     origin = forms.CharField(
         label='Start Location',
@@ -98,6 +100,7 @@ class RouteDaysForm(forms.Form):
         label='Days per week',
         min_value=1,
         max_value=7,
+        required=False,
         widget=forms.NumberInput(attrs={'placeholder': 'e.g. 5'})
     )
 
@@ -113,3 +116,22 @@ class RouteDaysForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'e.g. MTU Bishopstown'})
     )
 
+    def __init__(self, *args, **kwargs):    # override init to set initial value for days_selected
+        self.remaining_days = kwargs.pop("remaining_days", None)  # get remaining_days from kwargs
+        if self.remaining_days is not None:
+            self.remaining_days = int(self.remaining_days)
+        super().__init__(*args, **kwargs)
+        
+class SelectDaysForm(forms.Form):
+    DAYS = DAYS_OF_WEEK
+    days_selected = forms.MultipleChoiceField(
+        choices=DAYS,
+        widget=forms.CheckboxSelectMultiple,
+        label="Select the days that this route applies to"
+    )
+    def clean_days_selected(self):
+        days = self.cleaned_data["days_selected"]
+        if self.remaining_days is not None and len(days) > self.remaining_days:
+            raise forms.ValidationError(f"You can only select up to {self.remaining_days} days based on your previous selections.")
+        return days
+        

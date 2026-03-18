@@ -157,7 +157,7 @@ input[type="number"]{
 
 <label class="mode-option">
 
-<input type="radio" name="destination" value="{{value}}" style="display:none;">
+<input type="radio" name="destination" value="{{value}}" style="display:none;" {% if form.destination.value == value %}checked{% endif %}>
 
 <div class="icon">
 {% if value == 'bishopstown' %}🅿️
@@ -189,28 +189,42 @@ input[type="number"]{
 </div>
 
 
+{% if first_journey %}
 <div class="form-group">
 <label>Days per week</label>
 {{ form.days_per_week }}
 </div>
+{% endif %}
+
 
 
 <button type="submit" class="btn">Next</button>
 
 </form>
-</div>
 
 
 <script>
 
-const carparkOptions=document.querySelectorAll('#carpark-options .mode-option');
+const carparkOptions = document.querySelectorAll('#carpark-options .mode-option');
 
-carparkOptions.forEach(option=>{
-option.addEventListener('click',()=>{
-carparkOptions.forEach(opt=>opt.classList.remove('selected'));
-option.classList.add('selected');
-option.querySelector('input').checked=true;
-});
+carparkOptions.forEach(option => {
+
+    const radio = option.querySelector('input');
+
+    // restore selection if already checked
+    if (radio.checked){
+        option.classList.add('selected');
+    }
+
+    option.addEventListener('click', () => {
+
+        carparkOptions.forEach(opt => opt.classList.remove('selected'));
+
+        option.classList.add('selected');
+        radio.checked = true;
+
+    });
+
 });
 
 
@@ -220,6 +234,7 @@ const duoMode = "{{ duo_mode|yesno:'true,false' }}";
 if(duoMode === "true"){
 document.getElementById("secondary-section").style.display="block";
 }
+
 
 </script>
 <img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
