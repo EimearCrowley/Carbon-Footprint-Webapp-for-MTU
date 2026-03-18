@@ -117,9 +117,19 @@ h1{
 
 <div class="result-card">
 
-<p><strong>Route:</strong> {{ r.origin }} → {{ r.destination_display }}</p>
+<p><strong>Route:</strong> 
+{{ r.origin }} 
+{% if r.secondary_origin %}
+→ {{ r.secondary_origin }}
+{% endif %}
+→ {{ r.destination_display }}</p>
 
-<p><strong>Transport:</strong> {{ r.transport_mode | title }}</p>
+<p><strong>Transport:</strong> 
+{{ r.transport_mode | title }}
+{% if r.mode_2 %}
+→ {{ r.mode_2|title }}
+{% endif %}
+</p>
 
 <p><strong>Distance:</strong> {{ r.distance_km }} km</p>
 

@@ -9,6 +9,8 @@ class EmissionRecord(models.Model):
     destination = models.CharField(max_length=200)
 
     transport_mode = models.CharField(max_length=50, default="car")
+    mode_2 = models.CharField(max_length=20, blank=True, null=True)
+    secondary_origin = models.CharField(max_length=200, blank=True, null=True)
 
     distance_km = models.FloatField()
     weekly_emissions = models.FloatField()

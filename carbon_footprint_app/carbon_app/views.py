@@ -1,3 +1,5 @@
+from turtle import mode
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -115,6 +117,7 @@ def route_days_view(request):
         if form.is_valid():
 
             origin = form.cleaned_data["origin"]
+            secondary_origin = form.cleaned_data.get("secondary_origin")
             destination = form.cleaned_data["destination"]
             days = form.cleaned_data["days_per_week"]
 
@@ -126,6 +129,7 @@ def route_days_view(request):
                 origin = origin.title()
 
             request.session["origin"] = origin
+            request.session["secondary_origin"] = secondary_origin
             request.session["destination"] = destination
             request.session["days"] = days
 
@@ -146,14 +150,26 @@ def route_days_view(request):
 def results_view(request):
 
     mode = request.session.get('mode_1')
+    mode_2 = request.session.get('mode_2')
     fuel_type = request.session.get('fuel_type')
     engine_option = request.session.get('engine_option')
     passengers = int(request.session.get("passengers",1))
     origin = request.session.get('origin')
+    secondary_origin = request.session.get("secondary_origin")
     destination = request.session.get('destination')
     days = int(request.session.get('days', 0))
 
-    distance_km = get_distance_km(origin, destination,mode)
+    # SINGLE MODE DISTANCE
+    if not mode_2 or not secondary_origin:
+        distance_km = get_distance_km(origin, destination, mode)
+        distance_1 = distance_km
+        distance_2 = 0
+
+# DUO MODE DISTANCE
+    else:
+        distance_1 = get_distance_km(origin, secondary_origin, mode)
+        distance_2 = get_distance_km(secondary_origin, destination, mode_2)
+        distance_km = distance_1 + distance_2
 
     # ADD BUS DISTANCE IF PARK & RIDE
     if destination == "park_ride":
@@ -197,22 +213,36 @@ def results_view(request):
     weekly_emissions = None
 
     try:
-
+        # FACTOR FOR MODE 1
         if mode == "car":
 
             if fuel_type == "petrol":
-                factor = emission_factors["car_petrol"][engine_option]
+                factor_1 = emission_factors["car_petrol"][engine_option]
 
             elif fuel_type == "diesel":
-                factor = emission_factors["car_diesel"][engine_option]
+                factor_1 = emission_factors["car_diesel"][engine_option]
 
             else:
-                factor = emission_factors["car_electric"][engine_option]
+                factor_1 = emission_factors["car_electric"][engine_option]
 
         else:
-            factor = emission_factors.get(mode, 0.05)   # default value of 0.05 for unknown modes
+            factor_1 = emission_factors.get(mode, 0.05)
 
-        total_emissions = distance_km * 2 * days * factor
+
+        # FACTOR FOR MODE 2
+        if mode_2:
+            factor_2 = emission_factors.get(mode_2, 0.05)
+        else:
+            factor_2 = 0
+
+
+        # EMISSIONS FOR EACH LEG
+        emissions_1 = distance_1 * factor_1
+        emissions_2 = distance_2 * factor_2
+
+
+        # TOTAL WEEKLY EMISSIONS
+        total_emissions = (emissions_1 + emissions_2) * 2 * days
         weekly_emissions = round(total_emissions / passengers, 2)
 
     except Exception:
@@ -226,7 +256,10 @@ def results_view(request):
         EmissionRecord.objects.create(
             user=request.user,
             origin=origin,
+            secondary_origin=secondary_origin,
             destination=destination,
+            transport_mode=mode,
+            mode_2=mode_2,
             distance_km=distance_km,
             weekly_emissions=weekly_emissions
         )
@@ -251,7 +284,9 @@ def results_view(request):
     return render(request, 'results.html', {
 
         'mode': mode,
+        'mode_2': mode_2,
         'origin': origin,
+        'secondary_origin': secondary_origin,
         'destination': destination_display,
         'days': days,
         'distance_km': distance_km,
@@ -308,6 +343,7 @@ def summary_view(request):
         "engine_option": request.session.get("engine_option"),
 
         "origin": request.session.get("origin"),
+        "secondary_origin": request.session.get("secondary_origin"),
         "destination": destination_display,
         "days": request.session.get("days"),
         "distance_km": request.session.get("distance_km"),

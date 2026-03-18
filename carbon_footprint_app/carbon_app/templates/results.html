@@ -131,6 +131,7 @@ h2{color:#27ae60;}
 <div class="summary">
 
 <p><strong>From:</strong> {{ origin }}</p>
+<p><strong>Interchange:</strong> {{ secondary_origin }}</p>
 <p><strong>To:</strong> {{ destination }}</p>
 <p><strong>Days per week:</strong> {{ days }}</p>
 
@@ -145,6 +146,11 @@ h2{color:#27ae60;}
 E‑Scooter/Bike
 {% else %}
 {{ mode|title }}
+{% endif %}
+</p>
+
+{% if mode_2 %}
+<p><strong>Second mode:</strong> {{ mode_2|title }}
 {% endif %}
 </p>
 

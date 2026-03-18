@@ -153,6 +153,13 @@ text-decoration:underline;
 <p>{{ origin }}</p>
 </div>
 
+{% if secondary_origin %}
+<div class="summary-item">
+<h3>Interchange</h3>
+<p>{{ secondary_origin }}</p>
+</div>
+{% endif %}
+
 <div class="summary-item">
 <h3>To</h3>
 <p>{{ destination }}</p>
