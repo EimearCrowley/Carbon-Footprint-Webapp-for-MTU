@@ -18,6 +18,16 @@ CAR_PARK_NAMES = {
     "carrolls_quay": "Carroll's Quay Car Park"
 }
 
+day_names = {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+}
+
 # -----------------------------
 # MODE SELECTION
 # -----------------------------
@@ -259,7 +269,11 @@ def results_view(request):
             distance_2 = 0
 
         distance_km = distance_1 + distance_2
-        total_distance += distance_km
+
+        round_trip_distance = distance_km * 2
+        weekly_distance = round_trip_distance * days
+
+        total_distance += weekly_distance
 
         # FACTOR MODE 1
         if mode == "car":
@@ -299,15 +313,46 @@ def results_view(request):
     else:
         comparison = "equal"
 
-    return render(request, "results.html", {
+    all_days = ["mon","tue","wed","thu","fri","sat","sun"]
+    active_days = set()
+    for j in journeys:
+        for d in j["days"]:
+            active_days.add(d)
 
+    schedule = []
+    for key, label in day_names.items():
+        day_mode = None
+        
+        for j in journeys:
+            if key in j["days"]:
+                if j.get("mode_2"):
+                    day_mode = f"{j['mode']} → {j['mode_2']}"
+                else:
+                    day_mode = j["mode"]
+                break
+
+        schedule.append({
+            "day": label,
+            "mode": day_mode
+        })
+
+    raw_difference = weekly_emissions - national_weekly
+    max_diff = max(abs(difference), national_weekly)
+
+    # convert to percentage of half bar (50%)
+    offset_percent = (raw_difference / max_diff) * 50 if max_diff else 0
+
+    return render(request, "results.html", {
         "weekly_emissions": weekly_emissions,
         "distance_km": total_distance,
         "national_weekly": national_weekly,
         "difference": difference,
         "comparison": comparison,
-        "journeys": journeys
-
+        "journeys": journeys,
+        "all_days": all_days,
+        "active_days": active_days,
+        "schedule": schedule,
+        "offset_percent": offset_percent
     })
 
 

@@ -20,6 +20,6 @@ urlpatterns = [
     path('route/', views.route_days_view, name='route_days'),
     path("select-days/", views.select_days_view, name="select_days"),
     path('results/', views.results_view, name='results'),
-    path('summary/', views.summary_view, name='summary'),
+    # path('summary/', views.summary_view, name='summary'),
     path("reset/", views.reset_calculator, name="reset_calculator"),
 ]

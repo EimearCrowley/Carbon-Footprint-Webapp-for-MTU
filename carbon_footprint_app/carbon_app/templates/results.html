@@ -16,7 +16,7 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  height:100vh;
+  min-height:100vh;
 }
 
 .container{
@@ -49,15 +49,53 @@ h2{color:#27ae60;}
   color:#27ae60;
 }
 
+/* ===== SCHEDULE ===== */
+
+.schedule{
+  margin-top:30px;
+}
+
+.schedule h3{
+  color:#2c3e50;
+  margin-bottom:15px;
+}
+
+.schedule-grid{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.day-box{
+  width:80px;
+  height:80px;
+  border-radius:12px;
+  background:#ecf0f1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  color:#2c3e50;
+}
+
+.day-box.active{
+  background:#27ae60;
+  color:white;
+}
+
+.day-box.inactive{
+  background:#d5d8dc;
+  color:#7f8c8d;
+}
+
 /* BAR */
 
 .bar-container{
   width:100%;
-  height:28px;
-  background:#ecf0f1;
+  height:30px;
+  background:linear-gradient(to right, #2ecc71, #f1c40f, #e74c3c);
   border-radius:30px;
-  margin:25px 0;
-  overflow:hidden;
   position:relative;
 }
 
@@ -86,7 +124,15 @@ h2{color:#27ae60;}
   height:100%;
   width:3px;
   background:#2c3e50;
-  opacity:0.6;
+}
+
+.user-marker{
+  position:absolute;
+  top:-5px;
+  width:12px;
+  height:40px;
+  background:#2c3e50;
+  border-radius:4px;
 }
 
 .smiley{
@@ -110,12 +156,26 @@ h2{color:#27ae60;}
 .btn:hover{
   background:#219150;
 }
+
 .mtu-logo{
   position:fixed;
   bottom:15px;
   right:20px;
   width:120px;
   opacity:0.9;
+}
+
+.link-btn{
+  display:block;
+  margin-top:15px;
+  text-align:center;
+  color:#3498db;
+  text-decoration:none;
+  font-size:14px;
+}
+
+.link-btn:hover{
+  text-decoration:underline;
 }
 
 </style>
@@ -130,41 +190,46 @@ h2{color:#27ae60;}
 
 <div class="summary">
 
-<p><strong>From:</strong> {{ origin }}</p>
-<p><strong>Interchange:</strong> {{ secondary_origin }}</p>
-<p><strong>To:</strong> {{ destination }}</p>
-<p><strong>Days per week:</strong> {{ days }}</p>
-
 <p>
-<strong>Distance (one way):</strong>
+<strong>Weekly Distance (round trip):</strong>
 <span class="highlight">{{ distance_km|floatformat:1 }} km</span>
 </p>
-
-<p>
-<strong>Transport mode:</strong>
-{% if mode == "scooter" %}
-E‑Scooter/Bike
-{% else %}
-{{ mode|title }}
-{% endif %}
-</p>
-
-{% if mode_2 %}
-<p><strong>Second mode:</strong> {{ mode_2|title }}
-{% endif %}
-</p>
-
-{% if mode == "car" %}
-<p><strong>Fuel Type:</strong> {{ fuel_type|title }}</p>
-<p><strong>Engine:</strong> {{ engine_option }}</p>
-<p><strong>People in the car:</strong> {{ request.session.passengers }}</p>
-{% endif %}
 
 <p>
 <strong>Estimated weekly CO₂:</strong>
 <span class="highlight">{{ weekly_emissions|floatformat:2 }} kg</span>
 </p>
 
+</div>
+
+<!-- ===== SCHEDULE ===== -->
+
+<div class="schedule">
+<h3>Your Weekly Travel Schedule</h3>
+
+<div class="schedule-grid">
+
+{% for item in schedule %}
+<div class="day-box {% if item.mode %}active{% else %}inactive{% endif %}">
+    
+    <div>
+        <strong>{{ item.day }}</strong><br>
+
+        {% if item.mode %}
+            <span style="font-size:12px;">
+                {{ item.mode|title }}
+            </span>
+        {% else %}
+            <span style="font-size:12px;">
+                —
+            </span>
+        {% endif %}
+    </div>
+
+</div>
+{% endfor %}
+
+</div>
 </div>
 
 {% if weekly_emissions is not None %}
@@ -182,37 +247,30 @@ Your emissions are
 the national average.
 </p>
 
-{% widthratio weekly_emissions national_weekly 100 as emission_percent %}
-
 <div class="bar-container">
 
-<div class="average-line"></div>
+    <!-- CENTER (average) -->
+    <div class="average-line"></div>
 
-{% if weekly_emissions <= national_weekly %}
-<div class="bar-fill green" style="width: {{ emission_percent|floatformat:0 }}%"></div>
-
-{% elif weekly_emissions <= national_weekly|add:15 %}
-<div class="bar-fill yellow" style="width: {{ emission_percent }}%"></div>
-
-{% else %}
-<div class="bar-fill red" style="width: {{ emission_percent|floatformat:0 }}%"></div>
-
-{% endif %}
+    <!-- USER INDICATOR -->
+    <div class="user-marker" style="left: calc(50% + {{ offset_percent }}%);"></div>
 
 </div>
 
-<!-- SMILEY -->
+<div style="display:flex; justify-content:space-between; font-size:12px; margin-top:5px;">
+  <span>Lower</span>
+  <span><strong>{{ national_weekly }} kg (avg)</strong></span>
+  <span>Higher</span>
+</div>
 
 {% if weekly_emissions <= national_weekly %}
 <img src="{% static 'carbon_app/images/green_smile.png' %}" class="smiley">
-
 {% elif weekly_emissions <= national_weekly|add:15 %}
 <img src="{% static 'carbon_app/images/yellow_smile.png' %}" class="smiley">
-
 {% else %}
 <img src="{% static 'carbon_app/images/red_smile.png' %}" class="smiley">
-
 {% endif %}
+
 <!-- SUGGESTIONS -->
 
 {% if weekly_emissions <= national_weekly %}
@@ -231,14 +289,27 @@ Your emissions are much higher than average. Try reducing car journeys, using pu
 </p>
 
 {% endif %}
-
 {% endif %}
 
-<form action="{% url 'summary' %}" method="get">
-<button type="submit" class="btn">View Full Summary</button>
-</form>
+<!-- BUTTONS FROM SUMMARY -->
+
+<div style="margin-top:25px;">
+
+    <!-- Start Over -->
+    <a href="{% url 'reset_calculator' %}">
+        <button type="button" class="btn">Start Over</button>
+    </a>
+
+    <!-- Back to edit -->
+    <a href="{% url 'route_days' %}" class="link-btn" style="display:block; margin-top:15px; text-align:center; color:#3498db; text-decoration:none;">
+        ← Go back to edit journey
+    </a>
 
 </div>
+
+</div>
+
 <img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
+
 </body>
 </html>
