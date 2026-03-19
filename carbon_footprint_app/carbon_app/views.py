@@ -242,7 +242,6 @@ def results_view(request):
         "walk": 0.0,
         "scooter": 0.022
     }
-
     total_weekly_emissions = 0
     total_distance = 0
 
@@ -258,7 +257,10 @@ def results_view(request):
         for d in j.get("days", []):
             schedule_data.append({
                 "day": d,
-                "mode": mode_display
+                "mode": mode_display,
+                "origin": j["origin"],
+                "destination": j["destination"],
+                "secondary_origin": j.get("secondary_origin")
             })
 
         mode = j["mode"]
@@ -278,9 +280,7 @@ def results_view(request):
 
             distance_1 = get_distance_km(origin, secondary_origin, mode)
             distance_2 = get_distance_km(secondary_origin, destination, mode_2)
-
         else:
-
             distance_1 = get_distance_km(origin, destination, mode)
             distance_2 = 0
 
@@ -358,6 +358,7 @@ def results_view(request):
     # convert to percentage of half bar (50%)
     offset_percent = (raw_difference / max_diff) * 50 if max_diff else 0
 
+        # ✅ SAVE EACH ROUTE
     EmissionRecord.objects.create(
         user=request.user,
         origin=journeys[0]["origin"] if journeys else "",
@@ -490,6 +491,29 @@ def previous_results(request):
         except:
             schedule_data = []
 
+        routes_set = set()
+
+        for item in schedule_data:
+            mode = item.get("mode")
+
+            origin = item.get("origin")
+            destination = item.get("destination")
+            secondary = item.get("secondary_origin")
+
+            destination_display = CAR_PARK_NAMES.get(destination, destination)
+
+            if origin and destination:
+                route_str = origin
+
+                if secondary:
+                    route_str += f" → {secondary}"
+
+                route_str += f" → {destination_display}"
+
+                routes_set.add(route_str)
+
+        r.routes_list = list(routes_set)
+
         day_map = {item["day"]: item["mode"] for item in schedule_data}
         full_schedule = []
 
@@ -534,4 +558,12 @@ def reset_calculator(request):
     request.session.pop("days_per_week", None)
     request.session.pop("remaining_days", None)
 
+    return redirect("mode_selection")
+
+# Reset Session
+def reset_and_start(request):
+    keys_to_clear = ["journeys", "days_per_week", "remaining_days", "mode_1", "mode_2", "fuel_type", "engine_option", "passengers"]
+
+    for key in keys_to_clear:
+        request.session.pop(key, None)
     return redirect("mode_selection")

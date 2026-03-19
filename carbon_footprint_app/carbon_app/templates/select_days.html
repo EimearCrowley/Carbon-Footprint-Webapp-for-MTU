@@ -148,7 +148,9 @@ h2{
 </head>
 
 <body>
+    <a href="{% url 'reset_start' %}">
     <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
+</a>
 
 <div class="container">
 
@@ -189,38 +191,33 @@ h2{
 </div>
 
 <script>
-
 let maxDays = {{ total_days|default:7 }};
-
-// ✅ ONLY count other journeys initially
-let selectedTotal = {{ selected_total|default:0 }};
-
-// ✅ preload current journey days
 let selectedDays = {{ current_days|default:"[]"|safe }};
+let selectedTotal = {{ selected_total|default:0 }} + selectedDays.length;
 
 const counter = document.getElementById("day-counter");
 const tiles = document.querySelectorAll(".day-tile");
-const hiddenInput = document.getElementById("days_selected");
 
-// count current journey days too
-selectedTotal += selectedDays.length;
-
-// update UI
-function updateCounter(){
+// ✅ update counter + locking logic
+function updateUI() {
     counter.innerText = selectedTotal + " / " + maxDays + " days selected";
 
     tiles.forEach(tile => {
 
-        if (!tile.classList.contains("selected") && selectedTotal > maxDays) {
-            tile.classList.add("disabled");
-        } else if (!tile.classList.contains("used")) {
-            tile.classList.remove("disabled");
+        // skip permanently disabled (other journeys)
+        if (tile.classList.contains("disabled")) return;
+
+        // LOCK remaining tiles when max reached
+        if (!tile.classList.contains("selected") && selectedTotal >= maxDays) {
+            tile.classList.add("locked");
+        } else {
+            tile.classList.remove("locked");
         }
 
     });
 }
 
-
+// ✅ hidden inputs
 function updateHiddenInputs() {
     const container = document.getElementById("hidden-days");
     container.innerHTML = "";
@@ -234,48 +231,43 @@ function updateHiddenInputs() {
     });
 }
 
-// initialise tiles
+// ✅ initialise tiles
 tiles.forEach(tile => {
 
-    let day = tile.dataset.day;
+    const day = tile.dataset.day;
 
+    // mark tiles used by OTHER journeys
     if (tile.classList.contains("disabled")) {
-        tile.classList.add("used"); // locked from other journeys
-    }
-
-    // ensure current days are in array
-    if (tile.classList.contains("selected") && !selectedDays.includes(day)) {
-        selectedDays.push(day);
+        tile.classList.add("used");
     }
 
     tile.addEventListener("click", function(){
 
-        // block ONLY other journeys
+        // 🚫 block other journeys
         if (tile.classList.contains("used")) return;
+
+        // 🚫 block when locked
+        if (tile.classList.contains("locked")) return;
 
         if (tile.classList.contains("selected")) {
             tile.classList.remove("selected");
             selectedDays = selectedDays.filter(d => d !== day);
             selectedTotal--;
         } else {
-
-            if (selectedTotal >= maxDays) return;
-
             tile.classList.add("selected");
             selectedDays.push(day);
             selectedTotal++;
         }
 
         updateHiddenInputs();
-        updateCounter();
+        updateUI();
     });
 
 });
 
 // initial render
 updateHiddenInputs();
-updateCounter();
-
+updateUI();
 </script>
 <img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>

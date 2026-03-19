@@ -115,7 +115,9 @@
   </style>
 </head>
 <body>
-  <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
+  <a href="{% url 'reset_start' %}">
+    <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
+</a>
   <div class="container">
     <h1>Carbon Travel Calculator</h1>
     <h2>Select Your Transport Details</h2>

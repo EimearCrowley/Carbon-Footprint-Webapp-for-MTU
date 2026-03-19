@@ -134,7 +134,9 @@ h1{
 </head>
 
 <body>
+    <a href="{% url 'reset_start' %}">
     <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
+</a>
 
 <div class="container">
 
@@ -157,12 +159,12 @@ h1{
 <hr style="margin:10px 0;">
 
 <!-- ROUTE -->
-<p><strong>Route:</strong><br>
-{{ r.origin }}
-{% if r.secondary_origin %}
-→ {{ r.secondary_origin }}
-{% endif %}
-→ {{ r.destination_display }}
+<p><strong>Route(s):</strong><br>
+
+{% for route in r.routes_list %}
+    {{ route }}<br>
+{% endfor %}
+
 </p>
 
 <!-- STATS ROW -->

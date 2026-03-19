@@ -21,4 +21,5 @@ urlpatterns = [
     path("select-days/", views.select_days_view, name="select_days"),
     path('results/', views.results_view, name='results'),
     path("reset/", views.reset_calculator, name="reset_calculator"),
+    path("reset-start/", views.reset_and_start, name="reset_start"),
 ]

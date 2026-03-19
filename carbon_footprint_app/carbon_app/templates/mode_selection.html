@@ -134,7 +134,9 @@
   </style>
 </head>
 <body>
-  <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
+  <a href="{% url 'reset_start' %}">
+    <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
+</a>
   <div class="container">
 
 <div style="position:absolute; top:20px; right:30px;">
