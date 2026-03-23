@@ -134,6 +134,59 @@
   </style>
 </head>
 <body>
+  <div id="popup-overlay" style="
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.6);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+">
+
+    <div style="
+        background:white;
+        padding:30px;
+        border-radius:12px;
+        max-width:400px;
+        text-align:center;
+        box-shadow:0 4px 20px rgba(0,0,0,0.2);
+    ">
+        <h3 style="margin-bottom:15px;">Privacy & Safety Notice</h3>
+
+        <p style="font-size:14px; color:#555;">
+            We do not store or retain any personal data. Your entries (e.g., general home area, work location, and car engine size) are used only to generate results.
+        </p>    
+        <p style="font-size:14px; color:#555;">
+        ⚠️ <strong>Tip: Avoid entering your exact home address unless you’re comfortable doing so — using general areas, towns, or neighborhoods is sufficient for accurate results.</strong>
+      </p>    
+          <p style="font-size:14px; color:#555;">
+            To operate this calculator, your input data (home/work locations and car type) and technical information (including IP address) are temporarily sent to our hosting provider, PythonAnywhere. PythonAnywhere may log this information for security, operational, and performance purposes. These logs are retained for a limited period and are not linked to you personally beyond the hosting provider’s processing.
+            Please review <a href="https://www.pythonanywhere.com/privacy_v2/" target="_blank" style="color:#3498db;">
+            PythonAnywhere’s privacy policy
+            </a> for more details on their data handling.
+            <p style="font-size:14px; color:#555;">
+            By using this tool, you acknowledge and accept these conditions.
+        </p>
+
+        <button id="popup-ok" onclick="acceptConsent()" style="
+            margin-top:20px;
+            padding:10px 20px;
+            background:#27ae60;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:bold;
+        ">
+            OK
+        </button>
+    </div>
+
+</div>
   <a href="{% url 'reset_start' %}">
     <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
 </a>
@@ -237,14 +290,21 @@ the bus journey to MTU Bishopstown.
     }
 
     duoCheckbox.addEventListener('change', toggleSecondaryFields);
-    window.onload = toggleSecondaryFields;
+
+    function acceptConsent() {
+      document.getElementById("popup-overlay").style.display = "none";
+      localStorage.setItem("consentGiven", "true");
+    }
+
+    window.onload = function() {
+      toggleSecondaryFields();
+
+      if (localStorage.getItem("consentGiven") === "true") {
+        document.getElementById("popup-overlay").style.display = "none";
+      }
+      };
   </script>
+
 <img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
 </body>
 </html>
-
-
-
-
-
-
