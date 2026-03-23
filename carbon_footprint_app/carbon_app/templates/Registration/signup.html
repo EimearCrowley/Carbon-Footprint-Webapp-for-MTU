@@ -73,6 +73,17 @@
         width:120px;
         z-index:1000;
         }
+
+        .errorlist {
+        color: red;
+        list-style: none;
+        padding: 0;
+        margin: 5px 0;
+        }
+
+        .errorlist li {
+        margin: 3px 0;
+        }
     </style>
 
 </head>
@@ -92,11 +103,7 @@
 
         <button type="submit">Sign Up</button>
     </form>
-    {% if form.errors %}
-    <div style="color:red; margin-top:15px;">
-        {{ form.errors }}
-    </div>
-    {% endif %}
+
     <a href="/accounts/login/">Already have an account? Login</a>
 
 </div>
