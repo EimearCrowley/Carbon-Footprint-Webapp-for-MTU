@@ -159,7 +159,7 @@ Next
 </button>
 
 </form>
-
+{% include "includes/disclaimer.html" %}
 </div>
 
 <script>
@@ -167,7 +167,7 @@ Next
 let maxDays = {{ remaining_days|default:7 }};
 
 let selectedDays =
-JSON.parse('{{ current_days|default:"[]"|escapejs }}');
+JSON.parse('{{ current_days|default:"[]"|escapejs }}') || [];
 
 const counter =
 document.getElementById("day-counter");
@@ -178,11 +178,10 @@ document.querySelectorAll(".day-tile");
 function updateUI(){
 
 counter.innerText =
-(selectedDays.length + {{ selected_total }}) +
+((selectedDays.length || 0) + {{ selected_total|default:0 }}) +
 " / " +
-{{ total_days }} +
+{{ total_days|default:0 }} +
 " days selected";
-
 tiles.forEach(tile=>{
 
 if(tile.classList.contains("disabled"))

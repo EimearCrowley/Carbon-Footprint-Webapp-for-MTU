@@ -7,12 +7,23 @@ class ModeSelectionForm(forms.Form):
         ('bike', 'Bike'),
         ('walk', 'Walk'),
         ('train', 'Train'),
-        ('scooter', 'E‑Scooter/Bike'),   # NEW OPTION
+        ('scooter', 'E‑Scooter/Bike'),
     ]
     mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
     duo_mode = forms.BooleanField(required=False, label="Use two modes of transport?")
     mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
+    
+    def clean(self):
+        cleaned_data = super().clean()
 
+        duo_mode = cleaned_data.get("duo_mode")
+        mode_2 = cleaned_data.get("mode_2")
+
+        if duo_mode and not mode_2:
+            self.add_error("mode_2", "Please select a second mode of transport.")
+
+        return cleaned_data
+    
 CARPOOL_CHOICES = [
 (1, "1 person (Just me)"),
 (2, "2 people"),
@@ -99,7 +110,7 @@ class RouteDaysForm(forms.Form):
         label='Days per week',
         min_value=1,
         max_value=7,
-        required=False,
+        required=True,
         widget=forms.NumberInput(attrs={'placeholder': 'e.g. 5'})
     )
 

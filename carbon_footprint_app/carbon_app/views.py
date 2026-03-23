@@ -152,7 +152,19 @@ def route_days_view(request):
             
             if first_journey:
                 days_per_week = form.cleaned_data["days_per_week"]
+                
+                if not days_per_week:
+                    form.add_error("days_per_week", "Please enter how many days you travel per week.")
+                    return render(request, "route_days.html", {
+                        "form": form,
+                        "duo_mode": duo_mode,
+                        "remaining_days": request.session.get("remaining_days", 0),
+                        "first_journey": first_journey,
+                        "used_days": used_days
+                    })
+
                 request.session["days_per_week"] = days_per_week
+
             else:
                 days_per_week = request.session.get("days_per_week")
 
@@ -409,12 +421,22 @@ def select_days_view(request):
         selected_days = request.POST.getlist("days_selected")
 
         if not selected_days:
-            return render(request,"select_days.html",{
-                "remaining_days":total_days,
-                "used_days":used_days,
-                "current_days":[],
-                "day_names":day_names,
-                "error":"Select at least one day"
+    # rebuild values properly
+            used_days = []
+            for j in journeys[:-1]:
+                used_days.extend(j.get("days", []))
+
+            selected_total = sum(len(j.get("days", [])) for j in journeys[:-1])
+            remaining_days = total_days - selected_total
+
+            return render(request, "select_days.html", {
+                "error": "Please select at least one day.",
+                "remaining_days": remaining_days,
+                "used_days": used_days,
+                "selected_total": selected_total,
+                "total_days": total_days,
+                "current_days": [],
+                "day_names": day_names
             })
 
         # ✅ ONLY inside POST

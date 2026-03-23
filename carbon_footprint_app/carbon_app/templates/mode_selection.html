@@ -176,7 +176,8 @@ the bus journey to MTU Bishopstown.
         <div class="mode-grid" id="mode-options-1">
           {% for value, label in form.mode_1.field.choices %}
             <label class="mode-option">
-              <input type="radio" name="mode_1" value="{{ value }}" style="display: none;">
+              <input type="radio" name="mode_1" value="{{ value }}" style="display: none;"
+              {% if form.data.mode_1 == value %}checked{% endif %}>
               <img src="{% static 'carbon_app/images/'|add:value|add:'_button.png' %}" alt="{{ label }}">
               <span>{{ label }}</span>
             </label>
@@ -205,16 +206,22 @@ the bus journey to MTU Bishopstown.
 
       <button type="submit" class="btn">Next</button>
     </form>
+    {% include "includes/disclaimer.html" %}
   </div>
 
   <script>
     function setupModeSelector(containerId, inputName) {
       const options = document.querySelectorAll(`#${containerId} .mode-option`);
       options.forEach(option => {
+        const input = option.querySelector(`input[name="${inputName}"]`);
+        if (input.checked) {
+          option.classList.add('selected');
+        }
+
         option.addEventListener('click', () => {
           options.forEach(opt => opt.classList.remove('selected'));
           option.classList.add('selected');
-          option.querySelector(`input[name="${inputName}"]`).checked = true;
+          input.checked = true;
         });
       });
     }

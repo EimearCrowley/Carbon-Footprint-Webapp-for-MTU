@@ -16,7 +16,7 @@ mode_map = {
     "train": "transit",
     "bike": "bicycling",
     "walk": "walking",
-    "scooter": "driving"
+    "scooter": "bicycling",
 }
 
 def get_distance_km(origin, destination, mode="driving"):
@@ -31,7 +31,7 @@ def get_distance_km(origin, destination, mode="driving"):
     params = {
         "origins": origin,
         "destinations": destination,
-        "mode": "driving",
+        "mode": mode_map.get(mode, "driving"),
         "units": "metric",
         "key": api_key,
     }
