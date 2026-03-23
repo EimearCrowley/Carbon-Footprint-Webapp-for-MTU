@@ -203,6 +203,7 @@ input[type="number"]{
 {% if first_journey %}
 <div class="form-group">
 <label>Days per week</label>
+{{ form.days_per_week.errors }}
 {{ form.days_per_week }}
 </div>
 {% endif %}

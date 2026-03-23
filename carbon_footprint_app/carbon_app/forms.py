@@ -115,11 +115,19 @@ class RouteDaysForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'e.g. MTU Bishopstown'})
     )
 
-    def __init__(self, *args, **kwargs):    # override init to set initial value for days_selected
-        self.remaining_days = kwargs.pop("remaining_days", None)  # get remaining_days from kwargs
+    def __init__(self, *args, **kwargs):
+
+        self.remaining_days = kwargs.pop("remaining_days", None)
+        self.first_journey = kwargs.pop("first_journey", True)
+
         if self.remaining_days is not None:
             self.remaining_days = int(self.remaining_days)
+
         super().__init__(*args, **kwargs)
+
+        # Only require days on first journey
+        if not self.first_journey:
+            self.fields["days_per_week"].required = False
         
 class SelectDaysForm(forms.Form):
     DAYS = DAYS_OF_WEEK

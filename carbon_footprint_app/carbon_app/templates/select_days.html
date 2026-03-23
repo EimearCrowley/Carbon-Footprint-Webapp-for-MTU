@@ -37,10 +37,6 @@ h2{
   margin-bottom:20px;
 }
 
-.form-group{
-  margin-bottom:20px;
-}
-
 #day-counter{
   font-weight:bold;
   margin-bottom:15px;
@@ -67,46 +63,23 @@ h2{
   transition:0.2s;
 }
 
-.day-tile span{
-  color:#2c3e50;
-}
-
-.day-tile input{
-  display:none;
-}
-
-/* selected */
 .day-tile.selected{
   background:#27ae60;
-}
-
-.day-tile.selected span{
   color:white;
 }
 
-/* permanently disabled */
 .day-tile.disabled{
   background:#d5d8dc;
   cursor:not-allowed;
   opacity:0.6;
 }
 
-.day-tile.disabled span{
-  color:#7f8c8d;
-}
-
-/* locked when max reached */
 .day-tile.locked{
   background:#d5d8dc;
   cursor:not-allowed;
   opacity:0.6;
 }
 
-.day-tile.locked span{
-  color:#7f8c8d;
-}
-
-/* hover effect */
 .day-tile:hover:not(.disabled):not(.locked){
   transform:scale(1.05);
 }
@@ -133,23 +106,21 @@ h2{
   bottom:15px;
   left:20px;
   width:120px;
-  opacity:0.9;
 }
 
 .app-logo{
-    position:fixed;
-    top:15px;
-    left:20px;
-    width:120px;
-    z-index:1000;
+  position:fixed;
+  top:15px;
+  left:20px;
+  width:120px;
 }
-
 </style>
 </head>
 
 <body>
-    <a href="{% url 'reset_start' %}">
-    <img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
+
+<a href="{% url 'reset_start' %}">
+<img src="{% static 'carbon_app/images/app_logo.png' %}" class="app-logo">
 </a>
 
 <div class="container">
@@ -157,118 +128,158 @@ h2{
 <h1>Carbon Travel Calculator</h1>
 <h2>Select Route Days</h2>
 
-<div class="form-group">
-<label>Select the days that this route applies to.</label>
-
 <p id="day-counter">
 {{ selected_total }} / {{ total_days }} days selected
 </p>
-
 <form method="post">
+
 {% csrf_token %}
 
 <div class="day-grid">
 
-{% for day, label in day_names.items %}
+{% for day,label in day_names.items %}
 
-<div class="day-tile {% if day in used_days %}disabled{% endif %}
+<div class="day-tile 
+{% if day in used_days %}disabled{% endif %}
 {% if day in current_days %}selected{% endif %}"
-     data-day="{{ day }}">
-    {{ label }}
+data-day="{{day}}">
+
+{{label}}
+
 </div>
 
 {% endfor %}
 
 </div>
 
-<!-- HIDDEN INPUT -->
 <div id="hidden-days"></div>
 
-<button type="submit" class="btn">Next</button>
+<button type="submit" class="btn">
+Next
+</button>
 
 </form>
 
 </div>
 
 <script>
-let maxDays = {{ total_days|default:7 }};
-let selectedDays = {{ current_days|default:"[]"|safe }};
-let selectedTotal = {{ selected_total|default:0 }} + selectedDays.length;
 
-const counter = document.getElementById("day-counter");
-const tiles = document.querySelectorAll(".day-tile");
+let maxDays = {{ remaining_days|default:7 }};
 
-// ✅ update counter + locking logic
-function updateUI() {
-    counter.innerText = selectedTotal + " / " + maxDays + " days selected";
+let selectedDays =
+JSON.parse('{{ current_days|default:"[]"|escapejs }}');
 
-    tiles.forEach(tile => {
+const counter =
+document.getElementById("day-counter");
 
-        // skip permanently disabled (other journeys)
-        if (tile.classList.contains("disabled")) return;
+const tiles =
+document.querySelectorAll(".day-tile");
 
-        // LOCK remaining tiles when max reached
-        if (!tile.classList.contains("selected") && selectedTotal >= maxDays) {
-            tile.classList.add("locked");
-        } else {
-            tile.classList.remove("locked");
-        }
+function updateUI(){
 
-    });
+counter.innerText =
+(selectedDays.length + {{ selected_total }}) +
+" / " +
+{{ total_days }} +
+" days selected";
+
+tiles.forEach(tile=>{
+
+if(tile.classList.contains("disabled"))
+return;
+
+if(!tile.classList.contains("selected")
+&& selectedDays.length >= maxDays){
+
+tile.classList.add("locked");
+
+}else{
+
+tile.classList.remove("locked");
+
 }
-
-// ✅ hidden inputs
-function updateHiddenInputs() {
-    const container = document.getElementById("hidden-days");
-    container.innerHTML = "";
-
-    selectedDays.forEach(day => {
-        let input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "days_selected";
-        input.value = day;
-        container.appendChild(input);
-    });
-}
-
-// ✅ initialise tiles
-tiles.forEach(tile => {
-
-    const day = tile.dataset.day;
-
-    // mark tiles used by OTHER journeys
-    if (tile.classList.contains("disabled")) {
-        tile.classList.add("used");
-    }
-
-    tile.addEventListener("click", function(){
-
-        // 🚫 block other journeys
-        if (tile.classList.contains("used")) return;
-
-        // 🚫 block when locked
-        if (tile.classList.contains("locked")) return;
-
-        if (tile.classList.contains("selected")) {
-            tile.classList.remove("selected");
-            selectedDays = selectedDays.filter(d => d !== day);
-            selectedTotal--;
-        } else {
-            tile.classList.add("selected");
-            selectedDays.push(day);
-            selectedTotal++;
-        }
-
-        updateHiddenInputs();
-        updateUI();
-    });
 
 });
 
-// initial render
+}
+
+function updateHiddenInputs(){
+
+const container =
+document.getElementById("hidden-days");
+
+container.innerHTML="";
+
+selectedDays.forEach(day=>{
+
+let input =
+document.createElement("input");
+
+input.type="hidden";
+
+input.name="days_selected";
+
+input.value=day;
+
+container.appendChild(input);
+
+});
+
+}
+
+tiles.forEach(tile=>{
+
+const day = tile.dataset.day;
+
+if(tile.classList.contains("disabled")){
+
+tile.classList.add("used");
+
+return;
+
+}
+
+tile.addEventListener("click",function(){
+
+if(tile.classList.contains("used"))
+return;
+
+if(tile.classList.contains("locked"))
+return;
+
+if(tile.classList.contains("selected")){
+
+tile.classList.remove("selected");
+
+selectedDays =
+selectedDays.filter(d=>d!==day);
+
+}else{
+
+if(selectedDays.length>=maxDays)
+return;
+
+tile.classList.add("selected");
+
+selectedDays.push(day);
+
+}
+
 updateHiddenInputs();
+
 updateUI();
+
+});
+
+});
+
+updateHiddenInputs();
+
+updateUI();
+
 </script>
+
 <img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo">
+
 </body>
 </html>

@@ -126,8 +126,9 @@ def route_days_view(request):
     if "journeys" not in request.session:
         request.session["journeys"] = []
 
+    
     journeys = request.session.get("journeys", [])
-    first_journey = len(journeys) == 0
+    first_journey = request.session.get("days_per_week") is None
 
     if request.method == "POST":
         
@@ -136,7 +137,11 @@ def route_days_view(request):
         if first_journey:
             remaining_days = request.POST.get("days_per_week")
 
-        form = RouteDaysForm(request.POST)
+        form = RouteDaysForm(
+            request.POST,
+            remaining_days=request.session.get("remaining_days"),
+            first_journey=first_journey
+    )
 
         if form.is_valid():
 
@@ -182,14 +187,17 @@ def route_days_view(request):
             
             total_days = request.session.get("days_per_week")
 
-            request.session["remaining_days"] = request.session.get("days_per_week") 
+            
             return redirect("select_days")
         else:
             print(form.errors)  # if form is not valid, print error
 
     else:
         remaining_days = request.session.get("remaining_days")
-        form = RouteDaysForm(remaining_days=remaining_days)
+        form = RouteDaysForm(
+            remaining_days=remaining_days,
+            first_journey=first_journey
+        )
 
     used_days = []
     for j in journeys:
@@ -359,16 +367,17 @@ def results_view(request):
     offset_percent = (raw_difference / max_diff) * 50 if max_diff else 0
 
         # ✅ SAVE EACH ROUTE
-    EmissionRecord.objects.create(
-        user=request.user,
-        origin=journeys[0]["origin"] if journeys else "",
-        destination=journeys[-1]["destination"] if journeys else "",
-        transport_mode=journeys[0]["mode"] if journeys else "car",
-        mode_2=journeys[0].get("mode_2"),
-        secondary_origin=journeys[0].get("secondary_origin"),
-        distance_km=total_distance,
-        weekly_emissions=weekly_emissions,
-        days=json.dumps(schedule_data)
+    if request.user.is_authenticated:
+        EmissionRecord.objects.create(
+            user=request.user,
+            origin=journeys[0]["origin"] if journeys else "",
+            destination=journeys[-1]["destination"] if journeys else "",
+            transport_mode=journeys[0]["mode"] if journeys else "car",
+            mode_2=journeys[0].get("mode_2"),
+            secondary_origin=journeys[0].get("secondary_origin"),
+            distance_km=total_distance,
+            weekly_emissions=weekly_emissions,
+            days=json.dumps(schedule_data)
 )
 
     return render(request, "results.html", {
@@ -388,59 +397,59 @@ def results_view(request):
 def select_days_view(request):
 
     journeys = request.session.get("journeys", [])
-    total_days = request.session.get("days_per_week")
+    total_days = request.session.get("days_per_week", 7)
 
-    form = SelectDaysForm(request.POST)
+    used_days = []
+
+    for j in journeys[:-1]:
+        used_days.extend(j.get("days", []))
 
     if request.method == "POST":
 
         selected_days = request.POST.getlist("days_selected")
 
-        # 🚨 safety check
         if not selected_days:
-            return render(request, "select_days.html", {
-                "error": "Please select at least one day."
+            return render(request,"select_days.html",{
+                "remaining_days":total_days,
+                "used_days":used_days,
+                "current_days":[],
+                "day_names":day_names,
+                "error":"Select at least one day"
             })
 
-        # ✅ assign days to MOST RECENT journey
+        # ✅ ONLY inside POST
         journeys[-1]["days"] = selected_days
 
         request.session["journeys"] = journeys
 
-        # ✅ calculate totals
-        selected_total = sum(len(j["days"]) for j in journeys)
+        used_days_count = sum(len(j.get("days",[])) for j in journeys)
 
-        remaining_days = total_days - selected_total
+        remaining_days = total_days - used_days_count
+
         request.session["remaining_days"] = remaining_days
 
-        # 🎯 decision logic
         if remaining_days > 0:
-            return redirect("mode_selection")   # add another route
-        else:
-            return redirect("results")          # all days assigned
+            return redirect("mode_selection")
 
-    # GET request
-    used_days = []
-    current_journey_days = []
+        return redirect("results")
 
-    if journeys:
-        current_journey = journeys[-1]
-        current_journey_days = current_journey.get("days", [])
-        
-        for j in journeys[:-1]:
-            if "days" in j:
-                used_days.extend(j["days"])
-    
-    selected_total = len(used_days)
+    # ✅ GET request logic (no selected_days here)
+
+    current_days = journeys[-1].get("days",[]) if journeys else []
+
+    selected_total = sum(len(j.get("days",[])) for j in journeys[:-1])
+
     remaining_days = total_days - selected_total
 
-    return render(request, "select_days.html", {
-        "remaining_days": remaining_days,
-        "used_days": used_days,
-        "selected_total": selected_total,
-        "total_days": total_days,
-        "current_days": current_journey_days,
-        "day_names": day_names
+    return render(request,"select_days.html",{
+
+        "remaining_days":remaining_days,
+        "used_days":used_days,
+        "selected_total":selected_total,
+        "total_days":total_days,
+        "current_days":current_days,
+        "day_names":day_names
+
     })
     
 
