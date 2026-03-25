@@ -11,7 +11,7 @@ urlpatterns = [
     path('delete-result/<int:result_id>/', views.delete_result, name='delete_result'),
 
     # signup page
-    path('accounts/signup/', views.signup_view, name='signup'),
+    #path('accounts/signup/', views.signup_view, name='signup'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
 
     # app pages

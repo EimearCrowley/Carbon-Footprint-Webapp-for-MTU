@@ -28,11 +28,11 @@ urlpatterns = [
     path('', include('carbon_app.urls')),
 
     # ✅ OVERRIDE LOGIN + SIGNUP FIRST
-    path('accounts/login/', views.disabled_view, name='login'),
-    path('accounts/signup/', views.disabled_view, name='signup'),
+    path('accounts/login/', lambda request: views.disabled_view(request, "Login"), name='login'),
+    path('accounts/signup/', lambda request: views.disabled_view(request, "Sign up"), name='signup'),
 
     # Django auth URLs (password reset etc still available if needed)
-    path('accounts/', include('django.contrib.auth.urls')),
+    #path('accounts/', include('django.contrib.auth.urls')),
 
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
 ]

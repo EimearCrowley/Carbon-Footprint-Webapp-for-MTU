@@ -498,8 +498,10 @@ def signup_view(request):
 # -----------------------------
 # DISABLED VIEW
 # -----------------------------
-def disabled_view(request):
-    return render(request,"registration/disabled.html")
+def disabled_view(request, page_type):
+    return render(request,"registration/disabled.html", {
+        "page_type": page_type
+    })
 
 # -----------------------------
 # DASHBOARD
