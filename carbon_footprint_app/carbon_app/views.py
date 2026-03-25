@@ -479,22 +479,27 @@ def select_days_view(request):
 # SIGNUP
 # -----------------------------
 def signup_view(request):
+    return render(request,"registration/disabled.html")
+    # if request.method == "POST":
 
-    if request.method == "POST":
+    #     form = UserCreationForm(request.POST)
 
-        form = UserCreationForm(request.POST)
+    #     if form.is_valid():
+    #         user = form.save()
+    #         login(request,user)
 
-        if form.is_valid():
-            user = form.save()
-            login(request,user)
+    #         return redirect("mode_selection")
 
-            return redirect("mode_selection")
+    # else:
+    #     form = UserCreationForm()
 
-    else:
-        form = UserCreationForm()
+    # return render(request,"registration/signup.html",{"form":form})
 
-    return render(request,"registration/signup.html",{"form":form})
-
+# -----------------------------
+# DISABLED VIEW
+# -----------------------------
+def disabled_view(request):
+    return render(request,"registration/disabled.html")
 
 # -----------------------------
 # DASHBOARD

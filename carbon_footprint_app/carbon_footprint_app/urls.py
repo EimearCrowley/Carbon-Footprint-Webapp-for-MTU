@@ -20,12 +20,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from carbon_app import views   # ✅ ADD THIS
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('', include('carbon_app.urls')),
 
+    # ✅ OVERRIDE LOGIN + SIGNUP FIRST
+    path('accounts/login/', views.disabled_view, name='login'),
+    path('accounts/signup/', views.disabled_view, name='signup'),
+
+    # Django auth URLs (password reset etc still available if needed)
     path('accounts/', include('django.contrib.auth.urls')),
 
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),

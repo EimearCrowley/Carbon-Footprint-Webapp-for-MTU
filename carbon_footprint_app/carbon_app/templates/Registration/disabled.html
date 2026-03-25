@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Feature Disabled</title>
+
+<style>
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:#f4f7f9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    margin:0;
+}
+
+.box{
+    background:white;
+    padding:40px;
+    border-radius:16px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.1);
+    text-align:center;
+    max-width:500px;
+}
+
+h1{
+    color:#2c3e50;
+}
+
+p{
+    color:#555;
+}
+
+.btn{
+    margin-top:20px;
+    padding:12px 20px;
+    background:#27ae60;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
+    display:inline-block;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>Feature temporarily disabled</h1>
+
+<p>
+Sorry — login and account creation are currently disabled on the live version  
+for GDPR compliance reasons.
+</p>
+
+<p>
+This feature will return in a future update.
+</p>
+
+<a href="{% url 'mode_selection' %}" class="btn">
+Return to calculator
+</a>
+
+</div>
+
+</body>
+</html>
