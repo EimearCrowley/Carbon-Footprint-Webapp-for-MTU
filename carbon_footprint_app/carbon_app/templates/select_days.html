@@ -190,16 +190,13 @@ Next
 
 let maxDays = {{ remaining_days|default:7 }};
 
-let selectedDays =
-JSON.parse('{{ current_days|default:"[]"|escapejs }}') || [];
+let selectedDays = JSON.parse('{{ current_days|default:"[]"|escapejs }}') || []; // current selection into JS array
 
-const counter =
-document.getElementById("day-counter");
+const counter = document.getElementById("day-counter"); // counter
 
-const tiles =
-document.querySelectorAll(".day-tile");
+const tiles = document.querySelectorAll(".day-tile"); // day buttons
 
-function updateUI(){
+function updateUI(){ // keeps UI consistent
 
 counter.innerText =
 ((selectedDays.length || 0) + {{ selected_total|default:0 }}) +
@@ -208,10 +205,10 @@ counter.innerText =
 " days selected";
 tiles.forEach(tile=>{
 
-if(tile.classList.contains("disabled"))
+if(tile.classList.contains("disabled")) // if already used, ignore
 return;
 
-if(!tile.classList.contains("selected")
+if(!tile.classList.contains("selected") // if not selected, but max days reached, lock
 && selectedDays.length >= maxDays){
 
 tile.classList.add("locked");
@@ -228,12 +225,11 @@ tile.classList.remove("locked");
 
 function updateHiddenInputs(){
 
-const container =
-document.getElementById("hidden-days");
+const container = document.getElementById("hidden-days"); // hidden inputs stored
 
-container.innerHTML="";
+container.innerHTML=""; // clear existing inputs
 
-selectedDays.forEach(day=>{
+selectedDays.forEach(day=>{ // loop selected days, create hidden input for each
 
 let input =
 document.createElement("input");
@@ -244,7 +240,7 @@ input.name="days_selected";
 
 input.value=day;
 
-container.appendChild(input);
+container.appendChild(input); // add to form - not normal checkboxes
 
 });
 
@@ -252,9 +248,9 @@ container.appendChild(input);
 
 tiles.forEach(tile=>{
 
-const day = tile.dataset.day;
+const day = tile.dataset.day; // day = "mon"
 
-if(tile.classList.contains("disabled")){
+if(tile.classList.contains("disabled")){ // if already used - mark as used and ignore
 
 tile.classList.add("used");
 
@@ -262,33 +258,33 @@ return;
 
 }
 
-tile.addEventListener("click",function(){
+tile.addEventListener("click",function(){ // runs on click
 
-if(tile.classList.contains("used"))
+if(tile.classList.contains("used")) // ignore
 return;
 
 if(tile.classList.contains("locked"))
 return;
 
-if(tile.classList.contains("selected")){
+if(tile.classList.contains("selected")){  // already selected - remove
 
 tile.classList.remove("selected");
 
 selectedDays =
 selectedDays.filter(d=>d!==day);
 
-}else{
+}else{  
 
 if(selectedDays.length>=maxDays)
 return;
 
-tile.classList.add("selected");
+tile.classList.add("selected"); // not selected - add
 
 selectedDays.push(day);
 
 }
 
-updateHiddenInputs();
+updateHiddenInputs(); // update after every click
 
 updateUI();
 
@@ -296,7 +292,7 @@ updateUI();
 
 });
 
-updateHiddenInputs();
+updateHiddenInputs(); // correct initialisation
 
 updateUI();
 

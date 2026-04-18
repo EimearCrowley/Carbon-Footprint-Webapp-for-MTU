@@ -1,50 +1,12 @@
 from django import forms
 
-class ModeSelectionForm(forms.Form):
-    MODE_CHOICES = [
-        ('car', 'Car'),
-        ('bus', 'Bus'),
-        ('bike', 'Bike'),
-        ('walk', 'Walk'),
-        ('train', 'Train'),
-        ('scooter', 'E‑Scooter/Bike'),
-    ]
-    mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport")
-    duo_mode = forms.BooleanField(required=False, label="Use two modes of transport?")
-    mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
-    
-    def clean(self):
-        cleaned_data = super().clean()
-
-        duo_mode = cleaned_data.get("duo_mode")
-        mode_2 = cleaned_data.get("mode_2")
-
-        if duo_mode and not mode_2:
-            self.add_error("mode_2", "Please select a second mode of transport.")
-
-        return cleaned_data
-    
-CARPOOL_CHOICES = [
-(1, "1 person (Just me)"),
-(2, "2 people"),
-(3, "3 people"),
-(4, "4 people"),
-(5, "5 people"),
-]
-class TransportDetailsForm(forms.Form):
-    fuel_type = forms.ChoiceField(
-        choices=[('petrol', 'Petrol'), ('diesel', 'Diesel'), ('electric', 'Electric')],
-        widget=forms.RadioSelect(attrs={'class': 'fuel-type'})
-    )
-    engine_option = forms.CharField(widget=forms.HiddenInput(), required=False)
-
 MODE_CHOICES = [ 
     ('car', 'Car'), 
     ('bus', 'Bus'), 
     ('bike', 'Bike'), 
     ('walk', 'Walk'), 
     ('train', 'Train'),
-    ('scooter', 'E‑Scooter/Bike'),   # NEW OPTION
+    ('scooter', 'E‑Scooter/Bike'),  
 ]
 
 FUEL_CHOICES = [
@@ -76,12 +38,54 @@ DAYS_OF_WEEK = [
     ("sun","Sun"),
 ]
 
-passengers = forms.ChoiceField(
+CARPOOL_CHOICES = [
+(1, "1 person (Just me)"),
+(2, "2 people"),
+(3, "3 people"),
+(4, "4 people"),
+(5, "5 people"),
+]
+
+class ModeSelectionForm(forms.Form):
+    MODE_CHOICES = [
+        ('car', 'Car'),
+        ('bus', 'Bus'),
+        ('bike', 'Bike'),
+        ('walk', 'Walk'),
+        ('train', 'Train'),
+        ('scooter', 'E‑Scooter/Bike'),
+    ]
+    mode_1 = forms.ChoiceField(choices=MODE_CHOICES, widget=forms.RadioSelect, label="Primary Mode of Transport") # one transport type, options from MODE_CHOICES, rendered as radio buttons, label for form field
+    duo_mode = forms.BooleanField(required=False, label="Use two modes of transport?") # checkbox, doesn't give error if not ticked
+    mode_2 = forms.ChoiceField(choices=MODE_CHOICES, required=False, label="Secondary Mode of Transport")
+    
+    def clean(self):
+        cleaned_data = super().clean() # get cleaned data from form
+
+        duo_mode = cleaned_data.get("duo_mode") 
+        mode_2 = cleaned_data.get("mode_2")
+
+        if duo_mode and not mode_2:
+            self.add_error("mode_2", "Please select a second mode of transport.")
+
+        return cleaned_data
+    
+
+class TransportDetailsForm(forms.Form):
+    fuel_type = forms.ChoiceField(
+        choices=[('petrol', 'Petrol'), ('diesel', 'Diesel'), ('electric', 'Electric')],
+        widget=forms.RadioSelect(attrs={'class': 'fuel-type'}), required=False
+    )
+    
+    engine_option = forms.CharField(widget=forms.HiddenInput(), required=False)
+    # hidden field, set dynamically based on fuel type and mode selection
+
+    passengers = forms.ChoiceField(
     choices=CARPOOL_CHOICES,
     label="How many people are in the car?",
-    initial=1
-)
-    
+    initial=1, required=False
+    )
+  
 
 # Route days form (location + optional secondary location)
 class RouteDaysForm(forms.Form):
@@ -120,21 +124,16 @@ class RouteDaysForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'e.g. Cork Train Station'})
     )
 
-    secondary_destination = forms.CharField(
-        required=False,
-        label="Secondary Destination",
-        widget=forms.TextInput(attrs={'placeholder': 'e.g. MTU Bishopstown'})
-    )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):    # flexible arguments - any number of positional arguments, any number of named arguments
 
-        self.remaining_days = kwargs.pop("remaining_days", None)
+        self.remaining_days = kwargs.pop("remaining_days", None)    # removes from kwargs
         self.first_journey = kwargs.pop("first_journey", True)
 
-        if self.remaining_days is not None:
-            self.remaining_days = int(self.remaining_days)
+        if self.remaining_days is not None: # session data always stored as strings
+            self.remaining_days = int(self.remaining_days) # convert to int
 
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)   # call parent constructor method
 
         # Only require days on first journey
         if not self.first_journey:
@@ -149,7 +148,5 @@ class SelectDaysForm(forms.Form):
     )
     def clean_days_selected(self):
         days = self.cleaned_data["days_selected"]
-        if self.remaining_days is not None and len(days) > self.remaining_days:
-            raise forms.ValidationError(f"You can only select up to {self.remaining_days} days based on your previous selections.")
         return days
         

@@ -244,7 +244,7 @@ const carparkOptions = document.querySelectorAll('#carpark-options .mode-option'
 
 carparkOptions.forEach(option => {
 
-    const radio = option.querySelector('input');
+    const radio = option.querySelector('input'); // inside each car park box, get the hidden radio button
 
     // restore selection if already checked
     if (radio.checked){

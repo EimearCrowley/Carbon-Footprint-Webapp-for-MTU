@@ -274,12 +274,20 @@ h2{color:#27ae60;}
 Average weekly transport emissions in Ireland:
 <strong>{{ national_weekly }} kg</strong>
 </p>
-
+{% if comparison != "equal" %}
 <p>
 Your emissions are
 <strong>{{ difference|floatformat:2 }} kg {{ comparison }}</strong>
 the national average.
 </p>
+{% else %}
+<p>
+Your emissions are
+<strong>{{ comparison }}</strong> to
+the national average.
+</p>
+{% endif %}
+
 
 <div class="bar-container">
 

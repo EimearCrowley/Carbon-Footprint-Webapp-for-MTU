@@ -43,11 +43,11 @@
     }
 
     .radio-group {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
 
     .radio-option {
       flex: 1 1 calc(33.333% - 10px);
@@ -84,6 +84,7 @@
 
     .btn {
       width: 100%;
+      max-width: 100%;
       padding: 14px;
       background-color: #27ae60;
       color: white;
@@ -134,6 +135,9 @@
         margin-top: 120px;
         padding: 20px;
     }
+    .radio-group {
+      grid-template-columns: repeat(3,1 fr);
+    }
 }
   </style>
 </head>
@@ -147,6 +151,7 @@
 
     <form method="post">
       {% csrf_token %}
+      {% if mode == "car" %}
       <div class="form-group">
         <label>How many people are in the car?</label>
         <div class="radio-group">
@@ -170,9 +175,45 @@
 👨‍👩‍👧‍👦 4 people
 </label>
 
+  </div>
 </div>
+{% endif %}
 
+{% if mode_2 == "car" %}
+
+<div class="form-group">
+    <h3>Second Transport Mode (Car)</h3>
+
+    <label>How many people are in the car?</label>
+    <div class="radio-group">
+
+        <label class="radio-option">
+            <input type="radio" name="passengers_2" value="1" required>
+            🚗 1 (Just me)
+        </label>
+
+        <label class="radio-option">
+            <input type="radio" name="passengers_2" value="2">
+            👥 2 people
+        </label>
+
+        <label class="radio-option">
+            <input type="radio" name="passengers_2" value="3">
+            👨‍👩‍👧 3 people
+        </label>
+
+        <label class="radio-option">
+            <input type="radio" name="passengers_2" value="4">
+            👨‍👩‍👧‍👦 4 people
+        </label>
+
+    </div>
+    
 </div>
+{% endif %}
+
+
+{% if mode == "car" %}
       <div class="form-group">
         <label>What fuel does your car use?</label>
         <div class="radio-group" id="fuel-options">
@@ -211,27 +252,74 @@
           {% endfor %}
         </div>
       </div>
+{% endif %}
+
+{% if mode_2 == "car" %}
+
+<div class="form-group">
+
+    <label>What fuel does your car use?</label>
+    <div class="radio-group">
+        {% for value, label in form.fuel_type.field.choices %}
+        <label class="radio-option">
+            <input type="radio" name="fuel_type_2" value="{{ value }}" required>
+            <span class="icon">
+                {% if value == 'petrol' %}⛽{% elif value == 'diesel' %}🛢️{% elif value == 'electric' %}🔌{% endif %}
+            </span>
+            {{ label }}
+        </label>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="form-group" id="petrol-diesel-options-2" style="display:none;">
+    <label>Select engine size (second car):</label>
+    <div class="radio-group">
+        {% for value, label in petrol_diesel_engines %}
+        <label class="radio-option">
+            <input type="radio" name="engine_option_2" value="{{ value }}" required>
+            {{ label }}
+        </label>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="form-group" id="electric-options-2" style="display:none;">
+    <label>Select electric type (second car):</label>
+    <div class="radio-group">
+        {% for value, label in electric_engines %}
+        <label class="radio-option">
+            <input type="radio" name="engine_option_2" value="{{ value }}" required>
+            {{ label }}
+        </label>
+        {% endfor %}
+    </div>
+</div>
+
+{% endif %}
 
       <button type="submit" class="btn">Next</button>
     </form>
     {% include "includes/disclaimer.html" %}
   </div>
 
+
+
   <script>
-    const fuelRadios = document.querySelectorAll('input[name="fuel_type"]');
+    const fuelRadios = document.querySelectorAll('input[name="fuel_type"]'); // all fuel radio buttons
     const fuelOptions = document.querySelectorAll('#fuel-options .radio-option');
     const engineOptions = document.querySelectorAll('.radio-option input[name="engine_option"]');
-    const petrolDieselDiv = document.getElementById('petrol-diesel-options');
+    const petrolDieselDiv = document.getElementById('petrol-diesel-options'); // show/hide
     const electricDiv = document.getElementById('electric-options');
 
     function toggleEngineOptions() {
-      const selected = document.querySelector('input[name="fuel_type"]:checked');
+      const selected = document.querySelector('input[name="fuel_type"]:checked'); // find selected fuel type
       if (!selected) return;
 
       fuelOptions.forEach(option => {
         option.classList.remove('selected');
         if (option.querySelector('input').value === selected.value) {
-          option.classList.add('selected');
+          option.classList.add('selected'); // highlight selected fuel type
         }
       });
 
@@ -247,7 +335,7 @@
       }
 
       document.querySelectorAll('input[name="engine_option"]').forEach(input => {
-        input.checked = false;
+        input.checked = false;  // clear previous engine choice when switching fuel type
         input.closest('.radio-option')?.classList.remove('selected');
       });
     }
@@ -256,9 +344,9 @@
       document.querySelectorAll('.radio-option input').forEach(input => {
         input.addEventListener('change', () => {
           document.querySelectorAll(`input[name="${input.name}"]`).forEach(i => {
-            i.closest('.radio-option')?.classList.remove('selected');
+            i.closest('.radio-option')?.classList.remove('selected'); // find parent and remove highlight from all options in the same group
           });
-          input.closest('.radio-option')?.classList.add('selected');
+          input.closest('.radio-option')?.classList.add('selected'); // find parent of clicked input and add highlight
         });
       });
     }
@@ -274,6 +362,34 @@
       toggleEngineOptions();
       setupRadioHighlighting();
     };
+
+    const fuelRadios2 = document.querySelectorAll('input[name="fuel_type_2"]');
+const petrolDieselDiv2 = document.getElementById('petrol-diesel-options-2');
+const electricDiv2 = document.getElementById('electric-options-2');
+
+function toggleEngineOptions2() {
+    const selected = document.querySelector('input[name="fuel_type_2"]:checked');
+    if (!selected) return;
+
+    if (selected.value === 'petrol' || selected.value === 'diesel') {
+        petrolDieselDiv2.style.display = 'block';
+        electricDiv2.style.display = 'none';
+    } else if (selected.value === 'electric') {
+        petrolDieselDiv2.style.display = 'none';
+        electricDiv2.style.display = 'block';
+    } else {
+        petrolDieselDiv2.style.display = 'none';
+        electricDiv2.style.display = 'none';
+    }
+
+    document.querySelectorAll('input[name="engine_option_2"]').forEach(input => {
+        input.checked = false;
+    });
+}
+
+fuelRadios2.forEach(radio => {
+    radio.addEventListener('change', toggleEngineOptions2);
+});
   </script>
 <img src="{% static 'carbon_app/images/mtu_logo.png' %}" class="mtu-logo"> 
 </body>
